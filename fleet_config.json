@@ -1,0 +1,49 @@
+{
+  "trucks": [
+    {
+      "id": "TRK001",
+      "plate": "ABC-1234",
+      "driver": "John Smith",
+      "capacity": 300,
+      "height": 120
+    },
+    {
+      "id": "TRK002",
+      "plate": "YTU-998",
+      "driver": "Thokozani",
+      "capacity": 300.0,
+      "height": 120.0
+    },
+    {
+      "id": "TRK009",
+      "plate": "TYH-8775",
+      "driver": "DAX",
+      "capacity": 300.0,
+      "height": 120.0
+    }
+  ],
+  "sensors": [
+    {
+      "id": "SENSOR_001",
+      "type": "ultrasonic"
+    },
+    {
+      "id": "SENSOR_002",
+      "type": "ultrasonic"
+    },
+    {
+      "id": "SENSOR_009",
+      "type": "ultrasonic"
+    }
+  ],
+  "assignments": [
+    {
+      "sensor_id": "SENSOR_001",
+      "truck_id": "TRK001"
+    },
+    {
+      "sensor_id": "SENSOR_002",
+      "truck_id": "TRK002"
+    }
+  ]
+}
