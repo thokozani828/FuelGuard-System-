@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=yes" />
+  <title>FuelGuard · Fuel Management Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --fuel-orange: #ff6b35;
+      --fuel-orange-dark: #e55a2b;
+      --fuel-orange-light: #ff8c5a;
+      --deep-green: #1a472a;
+      --deep-green-dark: #0d2818;
+      --cream: #fdfbf7;
+      --shadow-medium: 0 20px 50px rgba(0,0,0,0.15);
+      --transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--cream);
+      color: #2e2922;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+    }
+
+    /* Message Toast */
+    .message-toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      min-width: 320px;
+      max-width: 450px;
+      animation: slideInRight 0.3s ease;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .message-toast.hide {
+      animation: slideOutRight 0.3s ease forwards;
+    }
+
+    @keyframes slideOutRight {
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    .message-content {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid;
+    }
+
+    .message-content.success {
+      border-left-color: #34a853;
+    }
+
+    .message-content.error {
+      border-left-color: #ea4335;
+    }
+
+    .message-content.info {
+      border-left-color: #1a73e8;
+    }
+
+    .message-icon {
+      font-size: 22px;
+    }
+
+    .message-content.success .message-icon { color: #34a853; }
+    .message-content.error .message-icon { color: #ea4335; }
+    .message-content.info .message-icon { color: #1a73e8; }
+
+    .message-text {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #2d3748;
+      line-height: 1.4;
+    }
+
+    .message-close {
+      cursor: pointer;
+      color: #a0aec0;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .message-close:hover {
+      color: #4a5568;
+    }
+
+    .landing-hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      background: linear-gradient(160deg, #f5f1e8 0%, #e8e1d3 40%, #d9cfb8 100%);
+      overflow: hidden;
+      padding: 6rem 0 4rem;
+    }
+
+    .hero-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=2070&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center 50%;
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    .hero-graphic {
+      position: absolute;
+      right: -5%;
+      top: 15%;
+      width: 50%;
+      height: 70%;
+      background: radial-gradient(ellipse at center, rgba(255,107,53,0.08) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    .hero-container {
+      position: relative;
+      z-index: 2;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .hero-text {
+      animation: fadeInLeft 1s ease-out;
+    }
+
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,107,53,0.12);
+      border: 1px solid rgba(255,107,53,0.3);
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--fuel-orange);
+      margin-bottom: 1.8rem;
+    }
+
+    .hero-text h1 {
+      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      font-weight: 800;
+      color: var(--deep-green);
+      line-height: 1.08;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-text h1 em {
+      font-style: italic;
+      color: var(--fuel-orange);
+      display: block;
+      font-size: 0.6em;
+      font-weight: 600;
+    }
+
+    .hero-text p {
+      font-size: 1.1rem;
+      color: #5a5244;
+      max-width: 480px;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    .hero-features {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2.2rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #3a3226;
+    }
+
+    .hero-feature span {
+      font-size: 1.1rem;
+    }
+
+    .auth-container {
+      position: relative;
+      min-height: 750px;
+    }
+
+    .auth-card {
+      background: rgba(255,255,250,0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 32px;
+      padding: 2.5rem 2.2rem;
+      box-shadow: var(--shadow-medium);
+      transition: transform 0.5s ease, opacity 0.4s ease;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .signup-panel,
+    .signin-panel {
+      min-height: 750px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .signup-panel {
+      display: flex;
+      z-index: 2;
+    }
+
+    .signin-panel {
+      display: flex;
+      z-index: 1;
+      opacity: 0;
+      visibility: hidden;
+      transform: rotateY(90deg);
+    }
+
+    .auth-card.flip-out {
+      animation: flipOut 0.5s ease forwards;
+    }
+
+    .auth-card.flip-in {
+      animation: flipIn 0.5s ease forwards;
+    }
+
+    @keyframes flipOut {
+      0% {
+        transform: rotateY(0deg);
+        opacity: 1;
+        visibility: visible;
+      }
+      100% {
+        transform: rotateY(90deg);
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    @keyframes flipIn {
+      0% {
+        transform: rotateY(-90deg);
+        opacity: 0;
+        visibility: hidden;
+      }
+      100% {
+        transform: rotateY(0deg);
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    .auth-card h3 {
+      font-size: 1.8rem;
+      color: var(--deep-green);
+      margin-bottom: 0.3rem;
+    }
+
+    .auth-card .subtitle {
+      font-size: 0.85rem;
+      color: #7a7060;
+      margin-bottom: 1.8rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.1rem;
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #3a3226;
+      margin-bottom: 0.3rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.8rem 1rem 0.8rem 2.6rem;
+      border: 1.5px solid #e0d8c8;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      background: rgba(255,255,250,0.7);
+      color: #2e2922;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: var(--fuel-orange);
+      box-shadow: 0 0 0 4px rgba(255,107,53,0.08);
+      background: white;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      font-size: 1rem;
+      color: #b8a88c;
+      pointer-events: none;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      margin: 1rem 0;
+      font-size: 0.75rem;
+      color: #5a5244;
+      line-height: 1.5;
+    }
+
+    .checkbox-row input {
+      accent-color: var(--fuel-orange);
+      margin-top: 2px;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .checkbox-row a {
+      color: var(--fuel-orange);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--fuel-orange);
+      border: none;
+      color: white;
+      padding: 0.95rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 10px 25px rgba(255,107,53,0.25);
+      margin-top: 1rem;
+    }
+
+    .btn-submit:hover {
+      background: var(--fuel-orange-dark);
+      box-shadow: 0 16px 35px rgba(255,107,53,0.4);
+      transform: translateY(-2px);
+    }
+
+    .alt-auth {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #8b7e68;
+      margin-top: 1rem;
+    }
+
+    .alt-auth a {
+      color: var(--fuel-orange);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .forgot-password {
+      text-align: right;
+      font-size: 0.7rem;
+      margin-top: -0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .forgot-password a {
+      color: var(--fuel-orange);
+      text-decoration: none;
+    }
+
+    .social-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1.2rem;
+      margin-bottom: 0.5rem;
+      justify-content: center;
+    }
+
+    .social-dot {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255,107,53,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 1.2rem;
+      color: var(--fuel-orange);
+    }
+
+    .social-dot:hover {
+      background: rgba(255,107,53,0.25);
+      transform: translateY(-2px);
+    }
+
+    .password-strength {
+      margin-top: 0.4rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .strength-bar {
+      flex: 1;
+      height: 3px;
+      background: #e0d8c8;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s, background 0.3s;
+      border-radius: 4px;
+    }
+
+    .strength-text {
+      font-size: 0.65rem;
+      font-weight: 600;
+      min-width: 55px;
+    }
+
+    .auth-card form {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .auth-card {
+      overflow-y: auto;
+      max-height: 750px;
+    }
+
+    .auth-card::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .auth-card::-webkit-scrollbar-track {
+      background: #e0d8c8;
+      border-radius: 4px;
+    }
+
+    .auth-card::-webkit-scrollbar-thumb {
+      background: var(--fuel-orange);
+      border-radius: 4px;
+    }
+
+    .trust-bar {
+      background: white;
+      padding: 2rem 0;
+      border-top: 1px solid #e8e1d5;
+      border-bottom: 1px solid #e8e1d5;
+      text-align: center;
+    }
+
+    .trust-logos {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #8b7e68;
+      letter-spacing: 0.8px;
+    }
+
+    .trust-logos i {
+      color: var(--fuel-orange);
+      margin-right: 0.3rem;
+    }
+
+    .footer-mini {
+      background: var(--deep-green);
+      color: #c8d5b9;
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+    }
+
+    .footer-mini a {
+      color: var(--fuel-orange-light);
+      text-decoration: none;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid white;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 900px) {
+      .hero-container {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+      .hero-text {
+        text-align: center;
+      }
+      .hero-text p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .hero-features {
+        justify-content: center;
+      }
+      .auth-container {
+        max-width: 500px;
+        margin: 0 auto;
+        min-height: 750px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .row-2 { grid-template-columns: 1fr; }
+      .hero-container { padding: 0 1.2rem; }
+      .auth-card { padding: 1.8rem 1.3rem; }
+      .auth-container,
+      .signup-panel,
+      .signin-panel {
+        min-height: 780px;
+      }
+      .message-toast {
+        left: 20px;
+        right: 20px;
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Message Toast Container -->
+  <div id="messageContainer" class="message-toast"></div>
+
+  <section class="landing-hero">
+    <div class="hero-pattern"></div>
+    <div class="hero-graphic"></div>
+    <div class="hero-container">
+
+      <div class="hero-text">
+        <div class="hero-badge"><i class="fas fa-gas-pump"></i> FuelGuard</div>
+        <h1>Join Our <em>Fuel Management</em> Platform</h1>
+        <p>Create your account to access premium fuel monitoring, real-time tank tracking, fleet management tools, and connect directly with our fuel specialists.</p>
+        <div class="hero-features">
+          <div class="hero-feature"><span><i class="fas fa-chart-line"></i></span> Real-time tracking</div>
+          <div class="hero-feature"><span><i class="fas fa-truck"></i></span> Fleet management</div>
+          <div class="hero-feature"><span><i class="fas fa-headset"></i></span> 24/7 support</div>
+        </div>
+      </div>
+
+      <div class="auth-container">
+        
+        <!-- Sign Up Panel -->
+        <div class="auth-card signup-panel" id="signupPanel">
+          <div>
+            <h3>Get Started</h3>
+            <p class="subtitle">Free account · No credit card required</p>
+          </div>
+
+          <form id="signupForm">
+            <div class="row-2">
+              <div class="input-group">
+                <label>First Name</label>
+                <span class="input-icon"><i class="fas fa-user"></i></span>
+                <input type="text" name="firstName" placeholder="John" required />
+              </div>
+              <div class="input-group">
+                <label>Last Name</label>
+                <span class="input-icon"><i class="fas fa-user"></i></span>
+                <input type="text" name="lastName" placeholder="Dlamini" required />
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Email Address</label>
+              <span class="input-icon"><i class="fas fa-envelope"></i></span>
+              <input type="email" name="email" placeholder="manager@fuelcompany.com" required />
+            </div>
+
+            <div class="input-group">
+              <label>Phone Number</label>
+              <span class="input-icon"><i class="fas fa-phone"></i></span>
+              <input type="tel" name="phone" placeholder="+27 82 456 7890" required />
+            </div>
+
+            <div class="row-2">
+              <div class="input-group">
+                <label>Password</label>
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" name="password" id="pwd" placeholder="Min. 8 characters" required minlength="8" />
+              </div>
+              <div class="input-group">
+                <label>Confirm Password</label>
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" name="confirmPassword" id="cpwd" placeholder="Re-enter" required minlength="8" />
+              </div>
+            </div>
+
+            <div class="password-strength">
+              <div class="strength-bar">
+                <div class="strength-fill" id="strengthFill"></div>
+              </div>
+              <span class="strength-text" id="strengthText">Weak</span>
+            </div>
+
+            <div class="checkbox-row">
+              <input type="checkbox" id="terms" required />
+              <label for="terms">I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</label>
+            </div>
+
+            <button type="submit" class="btn-submit" id="signupBtn"><i class="fas fa-user-plus"></i> Create My Account</button>
+
+            <p class="alt-auth">
+              Already have an account? <a onclick="switchToSignIn()">Sign in</a>
+            </p>
+
+            <div class="social-row">
+              <div class="social-dot" onclick="showMessage('Google signup - Coming soon', 'info')" title="Google"><i class="fab fa-google"></i></div>
+              <div class="social-dot" onclick="showMessage('Microsoft signup - Coming soon', 'info')" title="Microsoft"><i class="fab fa-microsoft"></i></div>
+              <div class="social-dot" onclick="showMessage('GitHub signup - Coming soon', 'info')" title="GitHub"><i class="fab fa-github"></i></div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Sign In Panel -->
+        <div class="auth-card signin-panel" id="signinPanel">
+          <div>
+            <h3>Welcome Back</h3>
+            <p class="subtitle">Sign in to access your dashboard</p>
+          </div>
+
+          <form id="signinForm">
+            <div class="input-group">
+              <label>Email Address</label>
+              <span class="input-icon"><i class="fas fa-envelope"></i></span>
+              <input type="email" name="email" placeholder="manager@fuelcompany.com" required />
+            </div>
+
+            <div class="input-group">
+              <label>Password</label>
+              <span class="input-icon"><i class="fas fa-lock"></i></span>
+              <input type="password" name="password" placeholder="Enter your password" required />
+            </div>
+
+            <div class="forgot-password">
+              <a href="#" onclick="showMessage('Password reset link will be sent to your email', 'info')">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn-submit" id="signinBtn"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+
+            <p class="alt-auth">
+              Don't have an account? <a onclick="switchToSignUp()">Create account</a>
+            </p>
+
+            <div class="social-row">
+              <div class="social-dot" onclick="showMessage('Google signin - Coming soon', 'info')" title="Google"><i class="fab fa-google"></i></div>
+              <div class="social-dot" onclick="showMessage('Microsoft signin - Coming soon', 'info')" title="Microsoft"><i class="fab fa-microsoft"></i></div>
+              <div class="social-dot" onclick="showMessage('GitHub signin - Coming soon', 'info')" title="GitHub"><i class="fab fa-github"></i></div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="trust-bar">
+    <div class="trust-logos">
+      <span><i class="fas fa-chart-line"></i> 10,000+ Tanks Monitored</span>
+      <span><i class="fas fa-truck"></i> 500+ Fleet Partners</span>
+      <span><i class="fas fa-globe"></i> South Africa Based</span>
+      <span><i class="fas fa-star"></i> 5-Star Customer Reviews</span>
+    </div>
+  </div>
+
+  <div class="footer-mini">
+    <p>© 2025 FuelGuard · Smart Fuel Management Solutions · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
+  </div>
+
+  <script>
+    // Show message on page (not popup)
+    function showMessage(message, type = 'success') {
+      const container = document.getElementById('messageContainer');
+      const messageId = 'msg_' + Date.now();
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.id = messageId;
+      messageDiv.className = 'message-content ' + type;
+      messageDiv.innerHTML = `
+        <div class="message-icon">
+          ${type === 'success' ? '<i class="fas fa-check-circle"></i>' : 
+            type === 'error' ? '<i class="fas fa-exclamation-circle"></i>' : 
+            '<i class="fas fa-info-circle"></i>'}
+        </div>
+        <div class="message-text">${message}</div>
+        <div class="message-close" onclick="closeMessage('${messageId}')">
+          <i class="fas fa-times"></i>
+        </div>
+      `;
+      
+      container.appendChild(messageDiv);
+      container.style.display = 'block';
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        closeMessage(messageId);
+      }, 5000);
+    }
+    
+    function closeMessage(messageId) {
+      const messageDiv = document.getElementById(messageId);
+      if (messageDiv) {
+        messageDiv.classList.add('hide');
+        setTimeout(() => {
+          messageDiv.remove();
+          const container = document.getElementById('messageContainer');
+          if (container.children.length === 0) {
+            container.style.display = 'none';
+          }
+        }, 300);
+      }
+    }
+    
+    // Password Strength Checker
+    const passwordInput = document.getElementById('pwd');
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+
+    if (passwordInput) {
+      function checkPasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]+/)) strength++;
+        if (password.match(/[A-Z]+/)) strength++;
+        if (password.match(/[0-9]+/)) strength++;
+        if (password.match(/[$@#&!]+/)) strength++;
+
+        let percentage = 0;
+        let text = '';
+        let color = '';
+
+        if (password.length === 0) {
+          percentage = 0;
+          text = 'Weak';
+          color = '#ea4335';
+        } else if (strength <= 2) {
+          percentage = 25;
+          text = 'Weak';
+          color = '#ea4335';
+        } else if (strength === 3) {
+          percentage = 50;
+          text = 'Fair';
+          color = '#fbbc05';
+        } else if (strength === 4) {
+          percentage = 75;
+          text = 'Good';
+          color = '#ff6b35';
+        } else {
+          percentage = 100;
+          text = 'Strong';
+          color = '#34a853';
+        }
+
+        strengthFill.style.width = `${percentage}%`;
+        strengthFill.style.background = color;
+        strengthText.textContent = text;
+        strengthText.style.color = color;
+      }
+
+      passwordInput.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+      });
+    }
+
+    const signupPanel = document.getElementById('signupPanel');
+    const signinPanel = document.getElementById('signinPanel');
+
+    function switchToSignIn() {
+      signupPanel.classList.add('flip-out');
+      signupPanel.classList.remove('flip-in');
+      
+      setTimeout(() => {
+        signupPanel.style.display = 'none';
+        signupPanel.style.visibility = 'hidden';
+        signupPanel.style.opacity = '0';
+        
+        signinPanel.style.display = 'flex';
+        signinPanel.style.visibility = 'visible';
+        signinPanel.classList.add('flip-in');
+        signinPanel.classList.remove('flip-out');
+      }, 250);
+    }
+
+    function switchToSignUp() {
+      signinPanel.classList.add('flip-out');
+      signinPanel.classList.remove('flip-in');
+      
+      setTimeout(() => {
+        signinPanel.style.display = 'none';
+        signinPanel.style.visibility = 'hidden';
+        signinPanel.style.opacity = '0';
+        
+        signupPanel.style.display = 'flex';
+        signupPanel.style.visibility = 'visible';
+        signupPanel.classList.add('flip-in');
+        signupPanel.classList.remove('flip-out');
+      }, 250);
+    }
+
+    // Handle Sign Up with PHP Backend
+    async function handleSignup(e) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const firstName = form.querySelector('input[name="firstName"]').value;
+      const lastName = form.querySelector('input[name="lastName"]').value;
+      const email = form.querySelector('input[name="email"]').value;
+      const phone = form.querySelector('input[name="phone"]').value;
+      const password = form.querySelector('input[name="password"]').value;
+      const confirmPassword = form.querySelector('input[name="confirmPassword"]').value;
+      const termsAccepted = document.getElementById('terms').checked;
+      const submitBtn = document.getElementById('signupBtn');
+      
+      // Validation
+      if (password !== confirmPassword) {
+        showMessage('Passwords do not match.', 'error');
+        return;
+      }
+      if (password.length < 8) {
+        showMessage('Password must be at least 8 characters.', 'error');
+        return;
+      }
+      if (!termsAccepted) {
+        showMessage('You must accept the Terms and Privacy Policy.', 'error');
+        return;
+      }
+      
+      // Show loading state
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span class="loader"></span> Creating account...';
+      submitBtn.disabled = true;
+      
+      try {
+        const response = await fetch('register.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            phone: phone,
+            password: password,
+            termsAccepted: termsAccepted
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showMessage(result.message, 'success');
+          // Clear form
+          form.reset();
+          // Reset password strength
+          if (strengthFill) {
+            strengthFill.style.width = '0%';
+            strengthText.textContent = 'Weak';
+            strengthText.style.color = '#ea4335';
+          }
+          // Switch to sign in panel
+          setTimeout(() => {
+            switchToSignIn();
+          }, 1500);
+        } else {
+          showMessage(result.message, 'error');
+        }
+      } catch (error) {
+        showMessage('Connection error. Please try again.', 'error');
+        console.error('Error:', error);
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+
+    // Handle Sign In with PHP Backend
+    async function handleSignin(e) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const email = form.querySelector('input[name="email"]').value;
+      const password = form.querySelector('input[name="password"]').value;
+      const submitBtn = document.getElementById('signinBtn');
+      
+      if (!email || !password) {
+        showMessage('Please enter email and password.', 'error');
+        return;
+      }
+      
+      // Show loading state
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span class="loader"></span> Signing in...';
+      submitBtn.disabled = true;
+      
+      try {
+        const response = await fetch('login.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showMessage(result.message, 'success');
+          // Store user info in localStorage
+          localStorage.setItem('fuelguard_user', JSON.stringify({
+            user_id: result.user_id,
+            first_name: result.first_name,
+            email: result.email
+          }));
+          // Redirect to dashboard after 1 second
+          setTimeout(() => {
+            // window.location.href = 'dashboard.html';
+            showMessage('Redirecting to dashboard...', 'info');
+          }, 1000);
+        } else {
+          showMessage(result.message, 'error');
+        }
+      } catch (error) {
+        showMessage('Connection error. Please try again.', 'error');
+        console.error('Error:', error);
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+
+    // Attach event listeners
+    document.getElementById('signupForm').addEventListener('submit', handleSignup);
+    document.getElementById('signinForm').addEventListener('submit', handleSignin);
+    
+    // Make functions global for onclick
+    window.switchToSignIn = switchToSignIn;
+    window.switchToSignUp = switchToSignUp;
+    window.showMessage = showMessage;
+    window.closeMessage = closeMessage;
+  </script>
+</body>
+</html>
