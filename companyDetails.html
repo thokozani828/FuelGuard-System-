@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=yes" />
+  <title>FuelGuard · Organization Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --fuel-orange: #ff6b35;
+      --fuel-orange-dark: #e55a2b;
+      --fuel-orange-light: #ff8c5a;
+      --deep-green: #1a472a;
+      --deep-green-dark: #0d2818;
+      --cream: #fdfbf7;
+      --shadow-medium: 0 20px 50px rgba(0,0,0,0.15);
+      --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--cream);
+      color: #2e2922;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Message Toast */
+    .message-toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      min-width: 320px;
+      max-width: 450px;
+      animation: slideInRight 0.3s ease;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .message-content {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid;
+    }
+
+    .message-content.success { border-left-color: #34a853; }
+    .message-content.error { border-left-color: #ea4335; }
+    .message-content.info { border-left-color: #1a73e8; }
+    .message-icon { font-size: 22px; }
+    .message-content.success .message-icon { color: #34a853; }
+    .message-content.error .message-icon { color: #ea4335; }
+    .message-content.info .message-icon { color: #1a73e8; }
+    .message-text { flex: 1; font-size: 0.85rem; color: #2d3748; }
+    .message-close { cursor: pointer; color: #a0aec0; font-size: 14px; }
+
+    /* Hero Layout */
+    .company-hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      background: linear-gradient(160deg, #f5f1e8 0%, #e8e1d3 40%, #d9cfb8 100%);
+      overflow: hidden;
+      padding: 4rem 0;
+    }
+
+    .hero-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=2070&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center 50%;
+      opacity: 0.1;
+      z-index: 0;
+    }
+
+    .hero-graphic {
+      position: absolute;
+      right: -5%;
+      top: 15%;
+      width: 50%;
+      height: 70%;
+      background: radial-gradient(ellipse at center, rgba(255,107,53,0.06) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    .company-container {
+      position: relative;
+      z-index: 2;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .company-info {
+      animation: fadeInLeft 1s ease-out;
+    }
+
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .company-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,107,53,0.12);
+      border: 1px solid rgba(255,107,53,0.3);
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--fuel-orange);
+      margin-bottom: 1.8rem;
+    }
+
+    .company-info h1 {
+      font-size: clamp(2.5rem, 5vw, 3.8rem);
+      font-weight: 800;
+      color: var(--deep-green);
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+
+    .company-info h1 em {
+      font-style: italic;
+      color: var(--fuel-orange);
+      display: block;
+      font-size: 0.6em;
+      font-weight: 600;
+    }
+
+    .company-info p {
+      font-size: 1rem;
+      color: #5a5244;
+      max-width: 460px;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    .progress-steps {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .step-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e0d8c8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #8b7e68;
+      transition: var(--transition);
+    }
+
+    .step-dot.active {
+      background: var(--fuel-orange);
+      color: white;
+      box-shadow: 0 4px 12px rgba(255,107,53,0.3);
+    }
+
+    .step-dot.completed {
+      background: var(--deep-green);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #5a5244;
+      letter-spacing: 0.5px;
+    }
+
+    /* Card Styles */
+    .company-card {
+      background: rgba(255,255,250,0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 32px;
+      padding: 2.5rem 2.2rem;
+      box-shadow: var(--shadow-medium);
+      transition: all 0.3s ease;
+    }
+
+    .company-card h3 {
+      font-size: 1.8rem;
+      color: var(--deep-green);
+      margin-bottom: 0.3rem;
+    }
+
+    .company-card .subtitle {
+      font-size: 0.85rem;
+      color: #7a7060;
+      margin-bottom: 1.8rem;
+      border-bottom: 1px solid #eee6dc;
+      padding-bottom: 0.8rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.2rem;
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #3a3226;
+      margin-bottom: 0.4rem;
+    }
+
+    .input-group input, 
+    .input-group select {
+      width: 100%;
+      padding: 0.85rem 1rem 0.85rem 2.6rem;
+      border: 1.5px solid #e0d8c8;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      background: rgba(255,255,250,0.7);
+      color: #2e2922;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .input-group input:focus, 
+    .input-group select:focus {
+      border-color: var(--fuel-orange);
+      box-shadow: 0 0 0 4px rgba(255,107,53,0.08);
+      background: white;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      bottom: 15px;
+      font-size: 1rem;
+      color: #b8a88c;
+      pointer-events: none;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.8rem;
+    }
+
+    .btn-primary {
+      flex: 1;
+      background: var(--fuel-orange);
+      border: none;
+      color: white;
+      padding: 0.95rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 10px 25px rgba(255,107,53,0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--fuel-orange-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 35px rgba(255,107,53,0.4);
+    }
+
+    .btn-secondary {
+      flex: 1;
+      background: transparent;
+      border: 1.5px solid #d4cbbc;
+      color: #5a5244;
+      padding: 0.85rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--fuel-orange);
+      color: var(--fuel-orange);
+      background: rgba(255,107,53,0.05);
+    }
+
+    .btn-primary:disabled, .btn-secondary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid white;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Step transitions */
+    .step-page {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .step-page.hidden-step {
+      display: none;
+    }
+
+    .step-page.visible-step {
+      display: block;
+      animation: fadeSlideUp 0.4s ease;
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .help-text {
+      font-size: 0.65rem;
+      color: #8b7e68;
+      margin-top: 0.3rem;
+    }
+
+    .timezone-note {
+      background: #fef5e8;
+      border-radius: 10px;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.7rem;
+      color: #b45f2b;
+      margin-top: -0.3rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .trust-bar {
+      background: white;
+      padding: 1.8rem 0;
+      border-top: 1px solid #e8e1d5;
+      border-bottom: 1px solid #e8e1d5;
+      text-align: center;
+    }
+
+    .trust-logos {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #8b7e68;
+    }
+
+    .trust-logos i {
+      color: var(--fuel-orange);
+      margin-right: 0.4rem;
+    }
+
+    .footer-mini {
+      background: var(--deep-green);
+      color: #c8d5b9;
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 900px) {
+      .company-container { grid-template-columns: 1fr; gap: 2rem; }
+      .company-info { text-align: center; }
+      .company-info p { margin-left: auto; margin-right: auto; }
+      .progress-steps { justify-content: center; }
+    }
+
+    @media (max-width: 500px) {
+      .company-container { padding: 0 1.2rem; }
+      .company-card { padding: 1.8rem 1.3rem; }
+      .row-2 { grid-template-columns: 1fr; }
+      .btn-group { flex-direction: column; }
+      .message-toast { left: 20px; right: 20px; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="messageContainer" class="message-toast"></div>
+
+  <section class="company-hero">
+    <div class="hero-pattern"></div>
+    <div class="hero-graphic"></div>
+    <div class="company-container">
+      
+      <!-- Left side info -->
+      <div class="company-info">
+        <div class="company-badge"><i class="fas fa-building"></i> FuelGuard Setup</div>
+        <h1>Customize your <em>organization profile</em></h1>
+        <p>Tell us about your company to unlock personalized fuel insights, fleet recommendations, and smart analytics tailored to your industry.</p>
+        <div class="progress-steps">
+          <div class="step-indicator">
+            <div class="step-dot" id="step1Dot">1</div>
+            <span class="step-label">Organization</span>
+          </div>
+          <div class="step-indicator">
+            <div class="step-dot" id="step2Dot">2</div>
+            <span class="step-label">Additional Details</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Form Card -->
+      <div class="company-card" id="formCard">
+        <!-- STEP 1: Organization Information -->
+        <div id="step1Page" class="step-page visible-step">
+          <h3>Organization Information</h3>
+          <p class="subtitle"><i class="fas fa-chart-line"></i> Basic company details</p>
+          <div class="input-group">
+            <label>Organization Name *</label>
+            <span class="input-icon"><i class="fas fa-building"></i></span>
+            <input type="text" id="orgName" placeholder="e.g., African Energy Solutions" maxlength="100" />
+            <div class="help-text">Max 100 characters</div>
+          </div>
+          <div class="input-group">
+            <label>Industry *</label>
+            <span class="input-icon"><i class="fas fa-industry"></i></span>
+            <select id="industry">
+              <option value="" disabled selected>Select your industry</option>
+              <option value="Manufacturing">Manufacturing</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Energy Generation">Energy Generation</option>
+              <option value="Transportation & Logistics">Transportation & Logistics</option>
+              <option value="Mining">Mining</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Construction">Construction</option>
+              <option value="Retail">Retail (Fuel Stations)</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Country *</label>
+              <span class="input-icon"><i class="fas fa-globe-americas"></i></span>
+              <select id="country">
+                <option value="United States">United States</option>
+                <option value="South Africa" selected>South Africa</option>
+                <option value="Kenya">Kenya</option>
+                <option value="Nigeria">Nigeria</option>
+                <option value="United Kingdom">United Kingdom</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Organization Type</label>
+              <span class="input-icon"><i class="fas fa-chart-pie"></i></span>
+              <select id="orgType">
+                <option value="Company" selected>Company</option>
+                <option value="Government">Government</option>
+                <option value="Non-Profit">Non-Profit</option>
+                <option value="Partnership">Partnership</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Website</label>
+            <span class="input-icon"><i class="fas fa-link"></i></span>
+            <input type="url" id="website" placeholder="https://your-company.com" />
+          </div>
+          <div class="btn-group">
+            <button class="btn-primary" id="nextToStep2Btn">Next Step <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Additional Details (Address, Timezone, Currency, Team Size, Org Age) -->
+        <div id="step2Page" class="step-page hidden-step">
+          <h3>Additional Details</h3>
+          <p class="subtitle"><i class="fas fa-sliders-h"></i> These details help us personalize your onboarding experience. You can always update them later in Organization Settings.</p>
+          
+          <div class="input-group">
+            <label>Address <span style="font-weight:normal; text-transform:none;">(Optional)</span></label>
+            <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+            <input type="text" id="address" placeholder="Street, City, Postal Code" />
+          </div>
+
+          <div class="input-group">
+            <label>Timezone <span style="font-weight:normal;">(Optional)</span></label>
+            <span class="input-icon"><i class="fas fa-clock"></i></span>
+            <select id="timezone">
+              <option value="Africa/Johannesburg">Auto-detected: Johannesburg (GMT+2)</option>
+              <option value="America/New_York">Eastern Time (GMT-5)</option>
+              <option value="Europe/London">London (GMT+0)</option>
+              <option value="Asia/Dubai">Dubai (GMT+4)</option>
+              <option value="Australia/Sydney">Sydney (GMT+11)</option>
+            </select>
+            <div class="timezone-note"><i class="fas fa-map-pin"></i> Auto-detected: Johannesburg</div>
+          </div>
+
+          <div class="row-2">
+            <div class="input-group">
+              <label>Currency <span style="font-weight:normal;">(Optional)</span></label>
+              <span class="input-icon"><i class="fas fa-coins"></i></span>
+              <select id="currency">
+                <option value="ZAR" selected>ZAR - South African Rand</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="KES">KES - Kenyan Shilling</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Estimated Team Size <span style="font-weight:normal;">(Optional)</span></label>
+              <span class="input-icon"><i class="fas fa-users"></i></span>
+              <select id="teamSize">
+                <option value="1-10">1-10</option>
+                <option value="11-50">11-50</option>
+                <option value="51-200">51-200</option>
+                <option value="201-500">201-500</option>
+                <option value="500+">500+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Organization Age (Years) <span style="font-weight:normal;">(Optional)</span></label>
+            <span class="input-icon"><i class="fas fa-calendar-alt"></i></span>
+            <input type="number" id="orgAge" placeholder="e.g., 5" min="0" step="1" />
+          </div>
+
+          <div class="btn-group">
+            <button class="btn-secondary" id="backToStep1Btn"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn-primary" id="createOrgBtn">Create Organization <i class="fas fa-check-circle"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="trust-bar">
+    <div class="trust-logos">
+      <span><i class="fas fa-chart-line"></i> 10,000+ Tanks Monitored</span>
+      <span><i class="fas fa-truck"></i> 500+ Fleet Partners</span>
+      <span><i class="fas fa-globe"></i> South Africa Based</span>
+      <span><i class="fas fa-star"></i> Tailored Analytics</span>
+    </div>
+  </div>
+
+  <div class="footer-mini">
+    <p>© 2025 FuelGuard · Smart Fuel Management Solutions · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
+  </div>
+
+  <script>
+    // DOM elements
+    const step1Page = document.getElementById('step1Page');
+    const step2Page = document.getElementById('step2Page');
+    const step1Dot = document.getElementById('step1Dot');
+    const step2Dot = document.getElementById('step2Dot');
+    const nextToStep2Btn = document.getElementById('nextToStep2Btn');
+    const backToStep1Btn = document.getElementById('backToStep1Btn');
+    const createOrgBtn = document.getElementById('createOrgBtn');
+
+    // Inputs for validation step1
+    const orgNameInput = document.getElementById('orgName');
+    const industrySelect = document.getElementById('industry');
+    const countrySelect = document.getElementById('country');
+
+    // Helper: Toast messages
+    function showMessage(message, type = 'success') {
+      const container = document.getElementById('messageContainer');
+      const msgId = 'msg_' + Date.now() + '_' + Math.random();
+      const msgDiv = document.createElement('div');
+      msgDiv.id = msgId;
+      msgDiv.className = 'message-content ' + type;
+      msgDiv.innerHTML = `
+        <div class="message-icon">
+          ${type === 'success' ? '<i class="fas fa-check-circle"></i>' : type === 'error' ? '<i class="fas fa-exclamation-circle"></i>' : '<i class="fas fa-info-circle"></i>'}
+        </div>
+        <div class="message-text">${message}</div>
+        <div class="message-close" onclick="closeMessage('${msgId}')"><i class="fas fa-times"></i></div>
+      `;
+      container.appendChild(msgDiv);
+      setTimeout(() => closeMessage(msgId), 5000);
+    }
+
+    window.closeMessage = function(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    };
+
+    // Step switching with validation
+    function goToStep2() {
+      // Validate Step 1 required fields
+      const orgName = orgNameInput.value.trim();
+      const industry = industrySelect.value;
+      const country = countrySelect.value;
+
+      if (!orgName) {
+        showMessage('Organization name is required.', 'error');
+        return false;
+      }
+      if (orgName.length > 100) {
+        showMessage('Organization name must be max 100 characters.', 'error');
+        return false;
+      }
+      if (!industry || industry === "") {
+        showMessage('Please select your industry.', 'error');
+        return false;
+      }
+      if (!country) {
+        showMessage('Please select your country.', 'error');
+        return false;
+      }
+
+      // Update UI to step 2
+      step1Page.classList.remove('visible-step');
+      step1Page.classList.add('hidden-step');
+      step2Page.classList.remove('hidden-step');
+      step2Page.classList.add('visible-step');
+
+      // Update step dots
+      step1Dot.classList.add('completed');
+      step1Dot.classList.remove('active');
+      step2Dot.classList.add('active');
+      step2Dot.classList.remove('completed');
+      
+      // Optional: set auto timezone note already present
+      return true;
+    }
+
+    function goToStep1() {
+      step2Page.classList.remove('visible-step');
+      step2Page.classList.add('hidden-step');
+      step1Page.classList.remove('hidden-step');
+      step1Page.classList.add('visible-step');
+
+      step1Dot.classList.remove('completed');
+      step1Dot.classList.add('active');
+      step2Dot.classList.remove('active');
+      step2Dot.classList.remove('completed');
+    }
+
+    // Final submission: gather all data and create organization
+    async function createOrganization() {
+      // Gather step1 data
+      const orgName = orgNameInput.value.trim();
+      const industry = industrySelect.value;
+      const country = countrySelect.value;
+      const orgType = document.getElementById('orgType').value;
+      const website = document.getElementById('website').value;
+
+      // Gather step2 data
+      const address = document.getElementById('address').value;
+      const timezone = document.getElementById('timezone').value;
+      const currency = document.getElementById('currency').value;
+      const teamSize = document.getElementById('teamSize').value;
+      const orgAge = document.getElementById('orgAge').value;
+
+      // Validate org name again (safety)
+      if (!orgName) {
+        showMessage('Organization name missing.', 'error');
+        goToStep1();
+        return;
+      }
+
+      const payload = {
+        organization: {
+          name: orgName,
+          industry: industry,
+          country: country,
+          type: orgType,
+          website: website || '',
+        },
+        additional: {
+          address: address || '',
+          timezone: timezone,
+          currency: currency,
+          estimatedTeamSize: teamSize,
+          organizationAgeYears: orgAge ? parseInt(orgAge) : null,
+        },
+        createdAt: new Date().toISOString()
+      };
+
+      // Disable button and show loader
+      const originalBtnText = createOrgBtn.innerHTML;
+      createOrgBtn.innerHTML = '<span class="loader"></span> Creating...';
+      createOrgBtn.disabled = true;
+
+      try {
+        // Simulate API call (replace with actual backend endpoint)
+        await new Promise(resolve => setTimeout(resolve, 1400));
+        
+        // Store in localStorage to simulate persistence
+        localStorage.setItem('fuelguard_organization', JSON.stringify(payload));
+        
+        showMessage(`✅ Organization "${orgName}" successfully created! Redirecting to dashboard...`, 'success');
+        
+        // In a real app: window.location.href = '/dashboard';
+        setTimeout(() => {
+          showMessage('Your personalized FuelGuard experience is ready.', 'info');
+          // Optional: reset or redirect
+          console.log('Organization saved:', payload);
+        }, 1500);
+      } catch (error) {
+        showMessage('Network error. Could not create organization.', 'error');
+        console.error(error);
+      } finally {
+        createOrgBtn.innerHTML = originalBtnText;
+        createOrgBtn.disabled = false;
+      }
+    }
+
+    // Event listeners
+    nextToStep2Btn.addEventListener('click', goToStep2);
+    backToStep1Btn.addEventListener('click', goToStep1);
+    createOrgBtn.addEventListener('click', createOrganization);
+
+    // Also detect Enter key on step1 main fields to go next
+    const step1Fields = [orgNameInput, industrySelect, countrySelect, document.getElementById('orgType'), document.getElementById('website')];
+    step1Fields.forEach(field => {
+      if (field) {
+        field.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && step1Page.classList.contains('visible-step')) {
+            e.preventDefault();
+            goToStep2();
+          }
+        });
+      }
+    });
+
+    // Set default auto-detected timezone note pre-filled, also pre-select currency ZAR 
+    // Extra: if needed populate any demo defaults (none forced)
+    // Additional: set focus style
+    console.log('Organization setup ready — Step 2 includes address, timezone, currency, team size, org age.');
+  </script>
+</body>
+</html>
