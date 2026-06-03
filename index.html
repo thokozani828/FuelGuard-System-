@@ -620,6 +620,11 @@
         min-width: auto;
       }
     }
+
+    .field-error {
+      border-color: #ea4335 !important;
+      background-color: #fff7f5 !important;
+    }
   </style>
 </head>
 <body>
@@ -652,7 +657,7 @@
             <p class="subtitle">Free account · No credit card required</p>
           </div>
 
-          <form id="signupForm">
+          <form id="signupForm" novalidate>
             <div class="row-2">
               <div class="input-group">
                 <label>First Name</label>
@@ -669,7 +674,7 @@
             <div class="input-group">
               <label>Email Address</label>
               <span class="input-icon"><i class="fas fa-envelope"></i></span>
-              <input type="email" name="email" placeholder="manager@fuelcompany.com" required />
+              <input type="email" name="email" id="emailSignup" placeholder="manager@fuelcompany.com" required />
             </div>
 
             <div class="input-group">
@@ -724,11 +729,11 @@
             <p class="subtitle">Sign in to access your dashboard</p>
           </div>
 
-          <form id="signinForm">
+          <form id="signinForm" novalidate>
             <div class="input-group">
               <label>Email Address</label>
               <span class="input-icon"><i class="fas fa-envelope"></i></span>
-              <input type="email" name="email" placeholder="manager@fuelcompany.com" required />
+              <input type="email" name="email" id="emailSignin" placeholder="manager@fuelcompany.com" required />
             </div>
 
             <div class="input-group">
@@ -773,7 +778,7 @@
   </div>
 
   <script>
-    // Show message on page (not popup)
+    // Helper: Show message toast
     function showMessage(message, type = 'success') {
       const container = document.getElementById('messageContainer');
       const messageId = 'msg_' + Date.now();
@@ -796,7 +801,6 @@
       container.appendChild(messageDiv);
       container.style.display = 'block';
       
-      // Auto hide after 5 seconds
       setTimeout(() => {
         closeMessage(messageId);
       }, 5000);
@@ -816,7 +820,7 @@
       }
     }
     
-    // Password Strength Checker
+    // PASSWORD STRENGTH
     const passwordInput = document.getElementById('pwd');
     const strengthFill = document.getElementById('strengthFill');
     const strengthText = document.getElementById('strengthText');
@@ -867,6 +871,7 @@
       });
     }
 
+    // PANEL SWITCHING
     const signupPanel = document.getElementById('signupPanel');
     const signinPanel = document.getElementById('signinPanel');
 
@@ -902,35 +907,122 @@
       }, 250);
     }
 
-    // Handle Sign Up with PHP Backend
+    // ---- ENHANCED CLIENT-SIDE VALIDATION ----
+    // Email validation: must NOT contain any numeric digits (0-9)
+    function validateEmail(email) {
+      // Check for numbers in email: if any digit 0-9 exists, it's invalid
+      if (/\d/.test(email)) {
+        return false;
+      }
+      // Standard email format validation
+      const re = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+      return re.test(email);
+    }
+
+    function validatePhone(phone) {
+      const phoneDigits = phone.replace(/[\s\-\(\)\+]/g, '');
+      return phoneDigits.length >= 9 && phoneDigits.length <= 15 && /^[\d]+$/.test(phoneDigits);
+    }
+
+    function validateName(name) {
+      return name.trim().length >= 2 && /^[A-Za-zÀ-ÖØ-öø-ÿ\s\-']+$/.test(name.trim());
+    }
+
+    function clearFieldErrors(form) {
+      form.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+    }
+
+    function markInvalidField(input) {
+      input.classList.add('field-error');
+    }
+
+    // Real-time email number blocking for signup and signin
+    const emailSignupInput = document.getElementById('emailSignup');
+    const emailSigninInput = document.getElementById('emailSignin');
+    
+    function blockNumbersInEmail(e) {
+      // Remove any numeric digits as the user types
+      if (/\d/.test(this.value)) {
+        this.value = this.value.replace(/\d/g, '');
+        // Show a subtle hint only once to avoid spamming
+        if (!this.hasAttribute('data-number-warning')) {
+          showMessage('Numbers are not allowed in email address', 'info');
+          this.setAttribute('data-number-warning', 'true');
+          setTimeout(() => {
+            if (emailSignupInput) emailSignupInput.removeAttribute('data-number-warning');
+            if (emailSigninInput) emailSigninInput.removeAttribute('data-number-warning');
+          }, 2000);
+        }
+      }
+    }
+    
+    if (emailSignupInput) {
+      emailSignupInput.addEventListener('input', blockNumbersInEmail);
+    }
+    if (emailSigninInput) {
+      emailSigninInput.addEventListener('input', blockNumbersInEmail);
+    }
+
+    // SIGNUP with full client validation
     async function handleSignup(e) {
       e.preventDefault();
-      
       const form = e.target;
-      const firstName = form.querySelector('input[name="firstName"]').value;
-      const lastName = form.querySelector('input[name="lastName"]').value;
-      const email = form.querySelector('input[name="email"]').value;
-      const phone = form.querySelector('input[name="phone"]').value;
+      clearFieldErrors(form);
+      
+      const firstName = form.querySelector('input[name="firstName"]').value.trim();
+      const lastName = form.querySelector('input[name="lastName"]').value.trim();
+      const email = form.querySelector('input[name="email"]').value.trim();
+      const phone = form.querySelector('input[name="phone"]').value.trim();
       const password = form.querySelector('input[name="password"]').value;
       const confirmPassword = form.querySelector('input[name="confirmPassword"]').value;
       const termsAccepted = document.getElementById('terms').checked;
-      const submitBtn = document.getElementById('signupBtn');
       
-      // Validation
-      if (password !== confirmPassword) {
+      let isValid = true;
+      
+      // First name validation
+      if (!firstName || !validateName(firstName)) {
+        showMessage('First name must be at least 2 letters and contain only letters, spaces, hyphens or apostrophes.', 'error');
+        markInvalidField(form.querySelector('input[name="firstName"]'));
+        isValid = false;
+      }
+      // Last name
+      else if (!lastName || !validateName(lastName)) {
+        showMessage('Last name must be at least 2 letters and contain only letters, spaces, hyphens or apostrophes.', 'error');
+        markInvalidField(form.querySelector('input[name="lastName"]'));
+        isValid = false;
+      }
+      // Email validation (no numbers + valid format)
+      else if (!email || !validateEmail(email)) {
+        showMessage('Please enter a valid email address without any numbers (e.g., name@domain.com).', 'error');
+        markInvalidField(form.querySelector('input[name="email"]'));
+        isValid = false;
+      }
+      // Phone validation
+      else if (!phone || !validatePhone(phone)) {
+        showMessage('Phone number must contain at least 9 digits (allow +, spaces, dashes).', 'error');
+        markInvalidField(form.querySelector('input[name="phone"]'));
+        isValid = false;
+      }
+      else if (password !== confirmPassword) {
         showMessage('Passwords do not match.', 'error');
-        return;
+        markInvalidField(form.querySelector('input[name="password"]'));
+        markInvalidField(form.querySelector('input[name="confirmPassword"]'));
+        isValid = false;
       }
-      if (password.length < 8) {
-        showMessage('Password must be at least 8 characters.', 'error');
-        return;
+      else if (password.length < 8) {
+        showMessage('Password must be at least 8 characters long.', 'error');
+        markInvalidField(form.querySelector('input[name="password"]'));
+        isValid = false;
       }
-      if (!termsAccepted) {
+      else if (!termsAccepted) {
         showMessage('You must accept the Terms and Privacy Policy.', 'error');
-        return;
+        isValid = false;
       }
       
-      // Show loading state
+      if (!isValid) return;
+      
+      // Submit to backend
+      const submitBtn = document.getElementById('signupBtn');
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<span class="loader"></span> Creating account...';
       submitBtn.disabled = true;
@@ -938,9 +1030,7 @@
       try {
         const response = await fetch('register.php', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             firstName: firstName,
             lastName: lastName,
@@ -955,45 +1045,48 @@
         
         if (result.success) {
           showMessage(result.message, 'success');
-          // Clear form
           form.reset();
-          // Reset password strength
           if (strengthFill) {
             strengthFill.style.width = '0%';
             strengthText.textContent = 'Weak';
             strengthText.style.color = '#ea4335';
           }
-          // Switch to sign in panel
-          setTimeout(() => {
-            switchToSignIn();
-          }, 1500);
+          setTimeout(() => { switchToSignIn(); }, 1500);
         } else {
           showMessage(result.message, 'error');
         }
       } catch (error) {
         showMessage('Connection error. Please try again.', 'error');
-        console.error('Error:', error);
+        console.error(error);
       } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
       }
     }
 
-    // Handle Sign In with PHP Backend
+    // SIGNIN with client validation (no numbers in email)
     async function handleSignin(e) {
       e.preventDefault();
-      
       const form = e.target;
-      const email = form.querySelector('input[name="email"]').value;
+      clearFieldErrors(form);
+      
+      const email = form.querySelector('input[name="email"]').value.trim();
       const password = form.querySelector('input[name="password"]').value;
-      const submitBtn = document.getElementById('signinBtn');
       
-      if (!email || !password) {
-        showMessage('Please enter email and password.', 'error');
-        return;
+      let isValid = true;
+      if (!email || !validateEmail(email)) {
+        showMessage('Please enter a valid email address without any numbers.', 'error');
+        markInvalidField(form.querySelector('input[name="email"]'));
+        isValid = false;
       }
+      if (!password || password.length < 1) {
+        showMessage('Password cannot be empty.', 'error');
+        markInvalidField(form.querySelector('input[name="password"]'));
+        isValid = false;
+      }
+      if (!isValid) return;
       
-      // Show loading state
+      const submitBtn = document.getElementById('signinBtn');
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<span class="loader"></span> Signing in...';
       submitBtn.disabled = true;
@@ -1001,36 +1094,26 @@
       try {
         const response = await fetch('login.php', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: email,
-            password: password
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password })
         });
         
         const result = await response.json();
         
         if (result.success) {
           showMessage(result.message, 'success');
-          // Store user info in localStorage
           localStorage.setItem('fuelguard_user', JSON.stringify({
             user_id: result.user_id,
             first_name: result.first_name,
             email: result.email
           }));
-          // Redirect to dashboard after 1 second
-          setTimeout(() => {
-            // window.location.href = 'dashboard.html';
-            showMessage('Redirecting to dashboard...', 'info');
-          }, 1000);
+          setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
         } else {
           showMessage(result.message, 'error');
         }
       } catch (error) {
         showMessage('Connection error. Please try again.', 'error');
-        console.error('Error:', error);
+        console.error(error);
       } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
@@ -1041,11 +1124,18 @@
     document.getElementById('signupForm').addEventListener('submit', handleSignup);
     document.getElementById('signinForm').addEventListener('submit', handleSignin);
     
-    // Make functions global for onclick
+    // Expose globals for inline onclick usage
     window.switchToSignIn = switchToSignIn;
     window.switchToSignUp = switchToSignUp;
     window.showMessage = showMessage;
     window.closeMessage = closeMessage;
+
+    // Live realtime validation: remove error style on input for better UX
+    document.querySelectorAll('#signupForm input, #signinForm input').forEach(input => {
+      input.addEventListener('input', function() {
+        this.classList.remove('field-error');
+      });
+    });
   </script>
 </body>
 </html>

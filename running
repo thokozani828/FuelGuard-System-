@@ -9,3 +9,17 @@ python -m simulator.sensor_simulator --interval 5
 
 cd C:\xampp\htdocs\fuelGued
 python view_dashboard.py
+
+
+
+
+
+
+
+
+
+cd C:\xampp\htdocs\fuelGued
+
+
+:: Run the system
+python webDashboard.py --interval 5 --web-port 8080

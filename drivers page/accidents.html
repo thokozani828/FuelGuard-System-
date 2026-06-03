@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>FuelGuard Pro | Accident Reports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-orange: #ff6b35;
+            --orange-dark: #e0551f;
+            --orange-light: #ff9b6e;
+            --deep-teal: #1e3a3f;
+            --dark-accent: #0f2c30;
+            --warm-cream: #fef9ef;
+            --sand-gray: #e6dfd1;
+            --shadow-card: 0 20px 35px -12px rgba(0,0,0,0.1);
+            --glass-bg: rgba(255, 253, 245, 0.92);
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --yellow: #f59e0b;
+            --yellow-light: #fef3c7;
+            --green: #10b981;
+            --green-light: #d1fae5;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(145deg, #f6efdf 0%, #e8dfcd 100%);
+            min-height: 100vh;
+            color: #2c241a;
+        }
+
+        .driver-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--deep-teal) 0%, var(--dark-accent) 100%);
+            border-right: 1px solid rgba(255,107,53,0.3);
+            display: flex;
+            flex-direction: column;
+            z-index: 1100;
+            transition: all 0.25s;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            margin-bottom: 20px;
+        }
+        .sidebar-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--orange-light), var(--primary-orange));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .sidebar-header p {
+            font-size: 11px;
+            color: var(--orange-light);
+            margin-top: 6px;
+        }
+        .driver-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 0 16px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #cbdfcc;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .nav-item i { width: 24px; font-size: 1.2rem; text-align: center; }
+        .nav-item:hover { background: rgba(255,107,53,0.2); color: var(--orange-light); transform: translateX(6px); }
+        .nav-item.active {
+            background: linear-gradient(95deg, rgba(255,107,53,0.25), rgba(255,107,53,0.08));
+            color: var(--primary-orange);
+            border-left: 3px solid var(--primary-orange);
+        }
+        .sidebar-footer {
+            margin: 20px 16px 28px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,107,53,0.2);
+        }
+        .logout-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(220,38,38,0.1);
+            border-radius: 14px;
+            color: #fca5a5;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .logout-action:hover { background: rgba(220,38,38,0.2); color: #ffcdcd; }
+
+        .dashboard-main {
+            margin-left: 260px;
+            padding: 26px 34px;
+            min-height: 100vh;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            padding: 14px 24px;
+            border-radius: 48px;
+            border: 1px solid rgba(255,107,53,0.2);
+        }
+        .welcome h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(130deg, var(--deep-teal), var(--primary-orange));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .btn-primary {
+            background: var(--primary-orange);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary:hover { background: var(--orange-dark); transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-orange);
+            color: var(--deep-teal);
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .btn-outline:hover { background: rgba(255,107,53,0.1); }
+        .btn-danger {
+            background: var(--red);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(255,107,53,0.15);
+            text-align: center;
+        }
+        .stat-icon { font-size: 2rem; margin-bottom: 10px; }
+        .stat-number { font-size: 1.8rem; font-weight: 800; color: var(--deep-teal); }
+        .stat-label { font-size: 0.75rem; color: #7d6e58; margin-top: 5px; }
+
+        .accidents-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .accident-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            border: 1px solid rgba(255,107,53,0.15);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .accident-card:hover { transform: translateX(5px); box-shadow: var(--shadow-card); }
+        .accident-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, rgba(30,58,63,0.05), rgba(255,107,53,0.05));
+            border-bottom: 1px solid rgba(255,107,53,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .accident-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--deep-teal);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-pending { background: var(--yellow-light); color: var(--yellow); }
+        .status-approved { background: var(--green-light); color: var(--green); }
+        .status-rejected { background: var(--red-light); color: var(--red); }
+        .accident-body {
+            padding: 20px 24px;
+        }
+        .accident-location {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: var(--primary-orange);
+            font-weight: 600;
+        }
+        .accident-description {
+            color: #5a5240;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        .accident-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(0,0,0,0.08);
+        }
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #7a7060;
+        }
+        .photo-thumb {
+            width: 60px;
+            height: 60px;
+            background: #f0ebe2;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-thumb i { font-size: 24px; color: #b8a88c; }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        .camera-feed {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        .camera-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal-container {
+            background: #fffcf5;
+            border-radius: 32px;
+            max-width: 550px;
+            width: 90%;
+            padding: 28px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-container h3 { font-size: 1.5rem; font-weight: 800; color: var(--deep-teal); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .photo-preview {
+            background: #f0ebe2;
+            border-radius: 20px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .photo-preview img { max-width: 100%; max-height: 300px; object-fit: contain; }
+        .photo-buttons { display: flex; gap: 12px; margin-bottom: 16px; }
+        .photo-btn {
+            background: var(--deep-teal);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .report-type-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .report-type-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--primary-orange);
+            background: white;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .report-type-btn.active {
+            background: var(--primary-orange);
+            color: white;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 20px;
+            border: 1.5px solid #ddd2c0;
+            margin-bottom: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+        
+        .footer-bar {
+            margin-top: 32px;
+            background: rgba(255,252,240,0.8);
+            border-radius: 30px;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #6b5b48;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,107,53,0.2);
+            border-top-color: var(--primary-orange);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--deep-teal);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 13px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast-message.show { opacity: 1; }
+        .toast-message.success { background: #1a472a; }
+        .toast-message.error { background: #dc2626; }
+        
+        @media (max-width: 768px) {
+            .driver-sidebar { width: 80px; }
+            .driver-sidebar .sidebar-header h1, .driver-sidebar .sidebar-header p, .nav-item span { display: none; }
+            .driver-sidebar .nav-item { justify-content: center; }
+            .logout-action span { display: none; }
+            .dashboard-main { margin-left: 80px; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="driver-sidebar">
+    <div class="sidebar-header">
+        <h1><i class="fas fa-gas-pump"></i> FuelGuard</h1>
+        <p>DRIVER PORTAL</p>
+    </div>
+    <div class="driver-nav">
+        <a href="driver-dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+        <a href="my-trucks.html" class="nav-item"><i class="fas fa-truck"></i><span>My Trucks</span></a>
+        <a href="accidents.html" class="nav-item active"><i class="fas fa-car-crash"></i><span>Accidents</span></a>
+        <a href="alerts.html" class="nav-item"><i class="fas fa-bell"></i><span>Alerts</span></a>
+        <a href="supports.html" class="nav-item"><i class="fas fa-headset"></i><span>Support</span></a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="logout-action" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>End Shift</span></div>
+    </div>
+</aside>
+
+<main class="dashboard-main">
+    <div class="top-bar">
+        <div class="welcome">
+            <h2><i class="fas fa-car-crash"></i> Incident Reports</h2>
+            <div style="font-size:12px;">Report accidents, damage, or any issues with your truck</div>
+        </div>
+        <button class="btn-danger" id="reportAccidentBtn"><i class="fas fa-camera"></i> Report Incident</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-file-alt" style="color: var(--primary-orange);"></i></div>
+            <div class="stat-number" id="totalAccidents">0</div>
+            <div class="stat-label">Total Reports</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-clock" style="color: var(--yellow);"></i></div>
+            <div class="stat-number" id="pendingAccidents">0</div>
+            <div class="stat-label">Under Review</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-check-circle" style="color: var(--green);"></i></div>
+            <div class="stat-number" id="approvedAccidents">0</div>
+            <div class="stat-label">Approved</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-truck" style="color: var(--deep-teal);"></i></div>
+            <div class="stat-number" id="assignedTruck">—</div>
+            <div class="stat-label">Current Truck</div>
+        </div>
+    </div>
+
+    <div class="accidents-list" id="accidentsList">
+        <div style="text-align:center; padding:60px;">
+            <div class="loading-spinner"></div>
+            <p style="margin-top:16px;">Loading incident reports...</p>
+        </div>
+    </div>
+
+    <div class="footer-bar">
+        <span><i class="fas fa-clock"></i> <span id="liveTime"></span></span>
+        <span><i class="fas fa-shield-alt"></i> Incident reporting system</span>
+        <span><i class="fas fa-sync-alt"></i> Auto-sync enabled</span>
+    </div>
+</main>
+
+<!-- Report Incident Modal -->
+<div id="accidentModal" class="modal-overlay">
+    <div class="modal-container">
+        <h3><i class="fas fa-triangle-exclamation"></i> Report Incident</h3>
+        
+        <div class="report-type-buttons">
+            <button class="report-type-btn" id="accidentTypeBtn" onclick="setReportType('accident')">🚗 Accident</button>
+            <button class="report-type-btn" id="damageTypeBtn" onclick="setReportType('damage')">🔧 Truck Damage</button>
+            <button class="report-type-btn" id="otherTypeBtn" onclick="setReportType('other')">📝 Other Issue</button>
+        </div>
+        
+        <div class="photo-preview" id="photoPreview">
+            <i class="fas fa-camera" style="font-size:48px; color:#c4b7a2;"></i>
+        </div>
+        
+        <div class="photo-buttons">
+            <button class="photo-btn" id="takePhotoBtn"><i class="fas fa-camera"></i> Take Photo</button>
+            <button class="photo-btn" id="uploadPhotoBtn"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+        </div>
+        
+        <input type="file" id="photoInput" accept="image/*" style="display:none;">
+        
+        <input type="text" id="incidentLocation" placeholder="Location (e.g., I-95, Mile 142, Fleet Yard)" required>
+        <textarea id="incidentDesc" rows="3" placeholder="Describe what happened, damage details, or issue..." required></textarea>
+        <select id="incidentSeverity" required>
+            <option value="minor">Minor - No major impact</option>
+            <option value="moderate">Moderate - Significant issue</option>
+            <option value="severe">Severe - Critical / Emergency</option>
+        </select>
+        
+        <div class="modal-actions">
+            <button class="btn-outline" id="cancelModalBtn">Cancel</button>
+            <button class="btn-primary" id="submitAccidentBtn">Submit Report</button>
+        </div>
+    </div>
+</div>
+
+<!-- View Photo Modal -->
+<div id="photoModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 600px;">
+        <h3><i class="fas fa-image"></i> Incident Photo</h3>
+        <div class="photo-preview" id="fullPhotoPreview"></div>
+        <div class="modal-actions">
+            <button class="btn-outline" id="closePhotoModalBtn">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Camera Modal -->
+<div id="cameraModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 550px;">
+        <h3><i class="fas fa-camera"></i> Take Photo</h3>
+        <div class="camera-container">
+            <video id="cameraFeed" class="camera-feed" autoplay playsinline></video>
+            <canvas id="cameraCanvas" style="display:none;"></canvas>
+        </div>
+        <div class="camera-controls">
+            <button class="btn-outline" id="closeCameraBtn">Cancel</button>
+            <button class="btn-primary" id="capturePhotoBtn"><i class="fas fa-camera"></i> Capture</button>
+        </div>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-message"></div>
+
+<script>
+    const SUPABASE_URL = 'https://shdaldiqnbtlgjajxroi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo';
+    
+    let currentDriver = null;
+    let accidents = [];
+    let capturedImage = null;
+    let currentReportType = 'accident';
+    let cameraStream = null;
+    
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = message;
+        toast.className = 'toast-message ' + type;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+    
+    function getSession() {
+        const session = localStorage.getItem('fuelguard_session') || sessionStorage.getItem('fuelguard_session');
+        if (session) {
+            try {
+                currentDriver = JSON.parse(session);
+                return currentDriver;
+            } catch(e) {
+                console.error('Session parse error:', e);
+            }
+        }
+        return null;
+    }
+    
+    function checkAuth() {
+        const driver = getSession();
+        if (!driver) {
+            window.location.href = 'driver-login.html';
+            return false;
+        }
+        if (driver.expires_at && new Date(driver.expires_at) < new Date()) {
+            localStorage.removeItem('fuelguard_session');
+            sessionStorage.removeItem('fuelguard_session');
+            window.location.href = 'driver-login.html';
+            return false;
+        }
+        return true;
+    }
+    
+    function setReportType(type) {
+        currentReportType = type;
+        document.querySelectorAll('.report-type-btn').forEach(btn => btn.classList.remove('active'));
+        if (type === 'accident') document.getElementById('accidentTypeBtn').classList.add('active');
+        if (type === 'damage') document.getElementById('damageTypeBtn').classList.add('active');
+        if (type === 'other') document.getElementById('otherTypeBtn').classList.add('active');
+    }
+    
+    async function fetchAccidents() {
+        if (!currentDriver) return [];
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/accident_reports?driver_id=eq.${currentDriver.driver_id}&order=reported_at.desc`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching accidents:', error);
+            return [];
+        }
+    }
+    
+    async function fetchTruck() {
+        if (!currentDriver) return;
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/trucks?assigned_driver_id=eq.${currentDriver.driver_id}`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            const data = await response.json();
+            if (data && data.length > 0) {
+                document.getElementById('assignedTruck').innerHTML = `<strong>${data[0].truck_id || data[0].id}</strong>`;
+                currentDriver.truck_id = data[0].truck_id || data[0].id;
+            }
+        } catch (error) {
+            console.error('Error fetching truck:', error);
+        }
+    }
+    
+    function getStatusBadge(status) {
+        const badges = {
+            'pending': '<span class="status-badge status-pending"><i class="fas fa-clock"></i> Under Review</span>',
+            'approved': '<span class="status-badge status-approved"><i class="fas fa-check-circle"></i> Approved</span>',
+            'rejected': '<span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> Rejected</span>'
+        };
+        return badges[status] || badges['pending'];
+    }
+    
+    function getSeverityIcon(severity) {
+        const icons = {
+            'minor': '<i class="fas fa-info-circle" style="color: #f59e0b;"></i> Minor',
+            'moderate': '<i class="fas fa-exclamation-triangle" style="color: #f97316;"></i> Moderate',
+            'severe': '<i class="fas fa-skull-crossbones" style="color: #dc2626;"></i> Severe'
+        };
+        return icons[severity] || icons['minor'];
+    }
+    
+    function getReportTypeIcon(type) {
+        const icons = {
+            'accident': '<i class="fas fa-car-crash" style="color: #dc2626;"></i> Accident',
+            'damage': '<i class="fas fa-tools" style="color: #f59e0b;"></i> Truck Damage',
+            'other': '<i class="fas fa-clipboard-list" style="color: #10b981;"></i> Other Issue'
+        };
+        return icons[type] || icons['other'];
+    }
+    
+    function renderAccidents() {
+        const container = document.getElementById('accidentsList');
+        
+        const total = accidents.length;
+        const pending = accidents.filter(a => a.status === 'pending').length;
+        const approved = accidents.filter(a => a.status === 'approved').length;
+        
+        document.getElementById('totalAccidents').innerText = total;
+        document.getElementById('pendingAccidents').innerText = pending;
+        document.getElementById('approvedAccidents').innerText = approved;
+        
+        if (accidents.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:60px; background: var(--glass-bg); border-radius: 28px;">
+                    <i class="fas fa-shield-heart" style="font-size:48px; color:#b8a88c;"></i>
+                    <p style="margin-top:16px;">No incident reports yet.</p>
+                    <p style="font-size:12px; color:#7a7060;">Click "Report Incident" to file a report.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = accidents.map(acc => `
+            <div class="accident-card">
+                <div class="accident-header">
+                    <div class="accident-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        ${new Date(acc.reported_at).toLocaleDateString()} at ${new Date(acc.reported_at).toLocaleTimeString()}
+                    </div>
+                    ${getStatusBadge(acc.status || 'pending')}
+                </div>
+                <div class="accident-body">
+                    <div class="accident-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${escapeHtml(acc.location || 'Location not specified')}
+                    </div>
+                    <div class="accident-description">
+                        ${escapeHtml(acc.description || 'No description provided')}
+                    </div>
+                    <div class="accident-details">
+                        <div class="detail-item">
+                            ${getReportTypeIcon(acc.report_type || 'accident')}
+                        </div>
+                        <div class="detail-item">
+                            ${getSeverityIcon(acc.severity || 'minor')}
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-truck"></i>
+                            Truck: ${escapeHtml(acc.truck_id || currentDriver?.truck_id || 'N/A')}
+                        </div>
+                        ${acc.photo_url ? `
+                            <div class="detail-item photo-thumb" onclick="viewPhoto('${acc.photo_url}')">
+                                <i class="fas fa-image"></i> View Photo
+                            </div>
+                        ` : `
+                            <div class="detail-item">
+                                <i class="fas fa-camera-slash"></i> No photo
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    async function loadAccidents() {
+        if (!checkAuth()) return;
+        
+        const container = document.getElementById('accidentsList');
+        container.innerHTML = '<div style="text-align:center; padding:60px;"><div class="loading-spinner"></div><p style="margin-top:16px;">Loading incident reports...</p></div>';
+        
+        accidents = await fetchAccidents();
+        renderAccidents();
+        fetchTruck();
+    }
+    
+    // Camera functions
+    async function startCamera() {
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const video = document.getElementById('cameraFeed');
+            video.srcObject = cameraStream;
+        } catch (err) {
+            console.error('Camera error:', err);
+            showToast('Cannot access camera. Please check permissions.', 'error');
+        }
+    }
+    
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+        const video = document.getElementById('cameraFeed');
+        if (video) video.srcObject = null;
+    }
+    
+    function capturePhoto() {
+        const video = document.getElementById('cameraFeed');
+        const canvas = document.getElementById('cameraCanvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        capturedImage = imageData;
+        
+        const preview = document.getElementById('photoPreview');
+        preview.innerHTML = `<img src="${capturedImage}" style="max-width:100%; max-height:250px; object-fit:contain;">`;
+        
+        closeCameraModal();
+        showToast('Photo captured successfully!', 'success');
+    }
+    
+    function openCameraModal() {
+        document.getElementById('cameraModal').classList.add('active');
+        startCamera();
+    }
+    
+    function closeCameraModal() {
+        document.getElementById('cameraModal').classList.remove('active');
+        stopCamera();
+    }
+    
+    function handleImage(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            capturedImage = e.target.result;
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = `<img src="${capturedImage}" style="max-width:100%; max-height:250px; object-fit:contain;">`;
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function dataURLtoBlob(dataURL) {
+        const arr = dataURL.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) { u8arr[n] = bstr.charCodeAt(n); }
+        return new Blob([u8arr], { type: mime });
+    }
+    
+    async function uploadImage() {
+        if (!capturedImage) return null;
+        const fileName = `incident_${currentDriver.driver_id}_${Date.now()}.jpg`;
+        const blob = dataURLtoBlob(capturedImage);
+        const formData = new FormData();
+        formData.append('file', blob, fileName);
+        
+        try {
+            const response = await fetch(`${SUPABASE_URL}/storage/v1/object/incident_photos/${fileName}`, {
+                method: 'POST',
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+                body: formData
+            });
+            if (response.ok) {
+                return `${SUPABASE_URL}/storage/v1/object/public/incident_photos/${fileName}`;
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
+        return null;
+    }
+    
+    async function submitAccident() {
+        const location = document.getElementById('incidentLocation').value.trim();
+        const description = document.getElementById('incidentDesc').value.trim();
+        const severity = document.getElementById('incidentSeverity').value;
+        
+        if (!location) {
+            showToast('Please provide a location', 'error');
+            return;
+        }
+        if (!description) {
+            showToast('Please provide a description', 'error');
+            return;
+        }
+        
+        const submitBtn = document.getElementById('submitAccidentBtn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+        submitBtn.disabled = true;
+        
+        try {
+            let photoUrl = null;
+            if (capturedImage) {
+                photoUrl = await uploadImage();
+            }
+            
+            const reportData = {
+                driver_id: currentDriver.driver_id,
+                driver_name: currentDriver.full_name,
+                truck_id: currentDriver.truck_id || null,
+                location: location,
+                description: description,
+                severity: severity,
+                report_type: currentReportType,
+                photo_url: photoUrl,
+                reported_at: new Date().toISOString(),
+                status: 'pending'
+            };
+            
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/accident_reports`, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reportData)
+            });
+            
+            if (response.ok) {
+                showToast('Incident report submitted successfully!', 'success');
+                closeAccidentModal();
+                loadAccidents();
+                document.getElementById('incidentLocation').value = '';
+                document.getElementById('incidentDesc').value = '';
+                capturedImage = null;
+                document.getElementById('photoPreview').innerHTML = '<i class="fas fa-camera" style="font-size:48px; color:#c4b7a2;"></i>';
+                setReportType('accident');
+            } else {
+                showToast('Failed to submit report. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            showToast('Error submitting report', 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+    
+    function openAccidentModal() {
+        document.getElementById('accidentModal').classList.add('active');
+    }
+    
+    function closeAccidentModal() {
+        document.getElementById('accidentModal').classList.remove('active');
+    }
+    
+    function viewPhoto(photoUrl) {
+        const modal = document.getElementById('photoModal');
+        const preview = document.getElementById('fullPhotoPreview');
+        preview.innerHTML = `<img src="${photoUrl}" style="max-width:100%; max-height:70vh; object-fit:contain;">`;
+        modal.classList.add('active');
+    }
+    
+    function closePhotoModal() {
+        document.getElementById('photoModal').classList.remove('active');
+    }
+    
+    function endShift() {
+        if (confirm('Are you sure you want to end your shift?')) {
+            localStorage.removeItem('fuelguard_session');
+            sessionStorage.removeItem('fuelguard_session');
+            showToast('Shift ended! Redirecting...', 'success');
+            setTimeout(() => window.location.href = 'driver-login.html', 1500);
+        }
+    }
+    
+    function updateTime() {
+        document.getElementById('liveTime').innerText = new Date().toLocaleTimeString();
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+    
+    document.getElementById('reportAccidentBtn').addEventListener('click', openAccidentModal);
+    document.getElementById('takePhotoBtn').addEventListener('click', openCameraModal);
+    document.getElementById('uploadPhotoBtn').addEventListener('click', () => document.getElementById('photoInput').click());
+    document.getElementById('photoInput').addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) handleImage(e.target.files[0]);
+    });
+    document.getElementById('submitAccidentBtn').addEventListener('click', submitAccident);
+    document.getElementById('cancelModalBtn').addEventListener('click', closeAccidentModal);
+    document.getElementById('closePhotoModalBtn').addEventListener('click', closePhotoModal);
+    document.getElementById('closeCameraBtn').addEventListener('click', closeCameraModal);
+    document.getElementById('capturePhotoBtn').addEventListener('click', capturePhoto);
+    document.getElementById('logoutBtn').addEventListener('click', endShift);
+    
+    document.getElementById('accidentModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('accidentModal')) closeAccidentModal();
+    });
+    document.getElementById('photoModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('photoModal')) closePhotoModal();
+    });
+    document.getElementById('cameraModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('cameraModal')) closeCameraModal();
+    });
+    
+    if (checkAuth()) {
+        loadAccidents();
+        setInterval(loadAccidents, 30000);
+    }
+</script>
+</body>
+</html>
