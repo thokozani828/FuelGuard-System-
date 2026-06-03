@@ -10,9 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Supabase configuration
-define('SUPABASE_URL', 'https://your-project-id.supabase.co');
-define('SUPABASE_KEY', 'your-supabase-anon-key');
+require_once dirname(__DIR__) . '/config.php';
 define('NETLIFY_URL', 'https://stellular-buttercream-cafeaa.netlify.app');
 
 function callSupabase($endpoint, $method = 'GET', $data = null) {
@@ -80,12 +78,28 @@ $data = json_decode(file_get_contents('php://input'), true);
 $action = $_GET['action'] ?? '';
 
 if ($action === 'createAndSendInvitation') {
-    $driver_id = $data['driver_id'] ?? '';
-    $full_name = $data['full_name'] ?? '';
-    $email = $data['email'] ?? '';
+    $driver_id = trim($data['driver_id'] ?? '');
+    $full_name = trim($data['full_name'] ?? '');
+    $email = trim($data['email'] ?? '');
     
     if (!$driver_id || !$full_name || !$email) {
         echo json_encode(['status' => 400, 'error' => 'Missing required fields: driver_id, full_name, email']);
+        exit();
+    }
+
+    // Validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['status' => 400, 'error' => 'Invalid email address format']);
+        exit();
+    }
+
+    if (!preg_match("/^[a-zA-Z\s\-]{2,100}$/", $full_name)) {
+        echo json_encode(['status' => 400, 'error' => 'Full name must be 2-100 characters and contain only letters, spaces, or hyphens']);
+        exit();
+    }
+
+    if (!preg_match("/^DRV[0-9a-zA-Z\-]{2,20}$/", $driver_id)) {
+        echo json_encode(['status' => 400, 'error' => 'Invalid Driver ID format']);
         exit();
     }
     

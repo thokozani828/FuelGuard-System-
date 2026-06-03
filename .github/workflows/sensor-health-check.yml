@@ -1,0 +1,30 @@
+name: Sensor Health Check
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Gateway Health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.DEPLOY_HOST }}:8000/api/health)
+          if [ "$STATUS" -ne 200 ]; then
+            echo "🚨 Gateway health check failed with status $STATUS"
+            exit 1
+          fi
+
+      - name: Create GitHub Issue on Failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "🚨 Sensor health check failed — " + new Date().toISOString(),
+              body: "The IoT Gateway health endpoint returned a non-200 status. Ingestion might be down."
+            })

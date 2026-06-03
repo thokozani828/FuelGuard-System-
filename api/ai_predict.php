@@ -14,7 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Simulated historical data (in production, fetch from database)
+require_once dirname(__DIR__) . '/config.php';
+validateSession();
+
+// Simulated historical data
 $historicalData = [
     'fuel_readings' => [65, 62, 58, 55, 52, 48, 45, 42, 40, 38, 35, 33],
     'temperature_readings' => [82, 84, 83, 85, 88, 92, 95, 89, 86, 84, 82, 80],

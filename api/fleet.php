@@ -5,13 +5,7 @@
  * Matches the provided database schema
  */
 
-// ============================================
-// DATABASE CONFIGURATION
-// ============================================
-
-// Supabase configuration
-define('SUPABASE_URL', 'https://shdaldiqnbtlgjajxroi.supabase.co');
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo');
+require_once dirname(__DIR__) . '/config.php';
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -174,8 +168,22 @@ class FleetManager {
             if (empty($data['license_plate'])) {
                 return ['status' => 400, 'error' => 'License plate is required'];
             }
-            if (empty($data['driver_name'])) {
-                return ['status' => 400, 'error' => 'Driver name is required'];
+            
+            // Business Logic: Verify Driver existence if provided
+            $driverName = $data['driver_name'] ?? 'Unassigned';
+            $driverPhone = $data['driver_phone'] ?? null;
+            $driverEmail = $data['driver_email'] ?? null;
+
+            if (!empty($data['driver_id'])) {
+                $driverResult = $this->supabase->get('drivers', ['driver_id' => 'eq.' . $data['driver_id']]);
+                if ($driverResult['status'] !== 200 || empty($driverResult['data'])) {
+                    return ['status' => 400, 'error' => 'Invalid assignment: Driver ID ' . $data['driver_id'] . ' not found in database.'];
+                }
+                // Use verified driver details
+                $driver = $driverResult['data'][0];
+                $driverName = $driver['full_name'];
+                $driverPhone = $driver['phone'] ?? null;
+                $driverEmail = $driver['email'] ?? null;
             }
             
             // Check if vehicle already exists
@@ -187,9 +195,9 @@ class FleetManager {
             $vehicleData = [
                 'truck_id' => $data['truck_id'],
                 'license_plate' => strtoupper($data['license_plate']),
-                'driver_name' => $data['driver_name'],
-                'driver_phone' => $data['driver_phone'] ?? null,
-                'driver_email' => $data['driver_email'] ?? null,
+                'driver_name' => $driverName,
+                'driver_phone' => $driverPhone,
+                'driver_email' => $driverEmail,
                 'tank_capacity_liters' => $data['tank_capacity_liters'] ?? 300,
                 'tank_height_cm' => $data['tank_height_cm'] ?? 120,
                 'tank_cross_section_m2' => $data['tank_cross_section_m2'] ?? 2.5,
@@ -230,15 +238,29 @@ class FleetManager {
             if (isset($data['license_plate'])) {
                 $updateData['license_plate'] = strtoupper($data['license_plate']);
             }
-            if (isset($data['driver_name'])) {
-                $updateData['driver_name'] = $data['driver_name'];
+            
+            // Business Logic: Verify Driver existence if provided
+            if (!empty($data['driver_id'])) {
+                $driverResult = $this->supabase->get('drivers', ['driver_id' => 'eq.' . $data['driver_id']]);
+                if ($driverResult['status'] !== 200 || empty($driverResult['data'])) {
+                    return ['status' => 400, 'error' => 'Invalid assignment: Driver ID ' . $data['driver_id'] . ' not found in database.'];
+                }
+                $driver = $driverResult['data'][0];
+                $updateData['driver_name'] = $driver['full_name'];
+                $updateData['driver_phone'] = $driver['phone'] ?? null;
+                $updateData['driver_email'] = $driver['email'] ?? null;
+            } else {
+                if (isset($data['driver_name'])) {
+                    $updateData['driver_name'] = $data['driver_name'];
+                }
+                if (isset($data['driver_phone'])) {
+                    $updateData['driver_phone'] = $data['driver_phone'];
+                }
+                if (isset($data['driver_email'])) {
+                    $updateData['driver_email'] = $data['driver_email'];
+                }
             }
-            if (isset($data['driver_phone'])) {
-                $updateData['driver_phone'] = $data['driver_phone'];
-            }
-            if (isset($data['driver_email'])) {
-                $updateData['driver_email'] = $data['driver_email'];
-            }
+
             if (isset($data['tank_capacity_liters'])) {
                 $updateData['tank_capacity_liters'] = floatval($data['tank_capacity_liters']);
             }

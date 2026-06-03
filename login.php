@@ -4,8 +4,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-define('SUPABASE_URL', 'https://shdaldiqnbtlgjajxroi.supabase.co');
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo');
+require_once __DIR__ . '/config.php';
 
 
 function callSupabase($endpoint, $method = 'GET', $data = null) {
@@ -61,10 +60,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if (password_verify($password, $user['password_hash'])) {
+        session_start();
+        $_SESSION['user_id'] = $user['user_id'] ?? $user['id'];
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['role'] = $user['role'] ?? 'user';
+
         echo json_encode([
             'success' => true,
             'message' => 'Login successful!',
-            'user_id' => $user['user_id'] ?? $user['id'],
+            'user_id' => $_SESSION['user_id'],
             'first_name' => $user['first_name'],
             'email' => $user['email']
         ]);

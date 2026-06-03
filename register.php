@@ -5,9 +5,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Supabase configuration
-define('SUPABASE_URL', 'https://shdaldiqnbtlgjajxroi.supabase.co');
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo');
+require_once __DIR__ . '/config.php';
 
 
 function callSupabase($endpoint, $method = 'GET', $data = null) {
@@ -47,9 +45,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone = trim($input['phone'] ?? '');
     $password = $input['password'] ?? '';
     
-    // Validation
-    if (strlen($password) < 8) {
-        echo json_encode(['success' => false, 'message' => 'Password must be at least 8 characters']);
+    // Rigorous Validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid email address format']);
+        exit;
+    }
+
+    if (!preg_match("/^[a-zA-Z\s\-]{2,50}$/", $firstName) || !preg_match("/^[a-zA-Z\s\-]{2,50}$/", $lastName)) {
+        echo json_encode(['success' => false, 'message' => 'Names must be 2-50 characters and contain only letters, spaces, or hyphens']);
+        exit;
+    }
+
+    if (!empty($phone) && !preg_match("/^[0-9\+\s\-]{9,15}$/", $phone)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid phone number format']);
+        exit;
+    }
+    
+    if (strlen($password) < 8 || !preg_match("/[A-Z]/", $password) || !preg_match("/[0-9]/", $password)) {
+        echo json_encode(['success' => false, 'message' => 'Password must be at least 8 characters long and include one uppercase letter and one number']);
         exit;
     }
     

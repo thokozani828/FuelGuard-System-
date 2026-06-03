@@ -21,6 +21,7 @@ load_dotenv(env_path)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+GATEWAY_API_KEY = os.getenv("GATEWAY_API_KEY")
 
 class DatabaseManager:
     """Manages database operations for fleet data"""
@@ -451,9 +452,13 @@ class SensorSimulator:
         }
         
         try:
+            headers = {
+                "X-API-Key": GATEWAY_API_KEY
+            }
             response = requests.post(
                 f"{self.api_url}/api/logs",
                 json=telemetry,
+                headers=headers,
                 timeout=5
             )
             

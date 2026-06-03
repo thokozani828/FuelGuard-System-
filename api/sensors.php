@@ -5,13 +5,7 @@
  * CRUD Operations for Sensors Management
  */
 
-// ============================================
-// DATABASE CONFIGURATION
-// ============================================
-
-// Supabase configuration
-define('SUPABASE_URL', 'https://shdaldiqnbtlgjajxroi.supabase.co');
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo');
+require_once dirname(__DIR__) . '/config.php';
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);

@@ -4,8 +4,7 @@
  * Complete CRUD Operations for Drivers with Invitation System
  */
 
-define('SUPABASE_URL', 'https://shdaldiqnbtlgjajxroi.supabase.co');
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo');
+require_once dirname(__DIR__) . '/config.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');

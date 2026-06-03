@@ -1,10 +1,12 @@
 # gateway/api.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Security, Depends
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, List, Optional
 from collections import defaultdict
 from datetime import datetime
 import logging
+import os
 from pydantic import BaseModel, Field
 
 # Setup logging
@@ -12,6 +14,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="FuelGuard IoT Gateway", version="1.0.0")
+
+# API Key security
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+async def get_api_key(api_key: str = Depends(api_key_header)):
+    expected_key = os.getenv("GATEWAY_API_KEY")
+    if not expected_key:
+        logger.error("GATEWAY_API_KEY not set in environment")
+        raise HTTPException(status_code=500, detail="Server configuration error")
+    
+    if api_key != expected_key:
+        raise HTTPException(status_code=401, detail="Invalid or missing API Key")
+    return api_key
 
 # CORS middleware
 app.add_middleware(
@@ -22,11 +38,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from pydantic import BaseModel, Field, field_validator
+
 # Pydantic models for request validation
 class TelemetryData(BaseModel):
     device_id: str
     sensor_type: str = "ultrasonic"
-    raw_value_cm: float = Field(..., alias="raw_value_cm")  # Accept raw_value_cm
+    raw_value_cm: float = Field(..., alias="raw_value_cm")
     temperature_c: float = Field(..., alias="temperature_c")
     timestamp: Optional[str] = None
     truck_id: Optional[str] = None
@@ -37,13 +55,39 @@ class TelemetryData(BaseModel):
     fuel_volume_liters: Optional[float] = None
     tank_capacity_liters: Optional[float] = None
     status: Optional[str] = None
-    # Location fields
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    
+    # Location fields with strict bounds
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
     location_name: Optional[str] = None
-    odometer_km: Optional[float] = None
-    speed_kmh: Optional[float] = None
-    trip_distance_km: Optional[float] = None
+    odometer_km: Optional[float] = Field(None, ge=0)
+    speed_kmh: Optional[float] = Field(None, ge=0, le=200)
+    trip_distance_km: Optional[float] = Field(None, ge=0)
+
+    @field_validator('raw_value_cm')
+    @classmethod
+    def validate_raw_value(cls, v: float) -> float:
+        if v < 0:
+            raise ValueError('raw_value_cm cannot be negative')
+        if v > 1000:
+            raise ValueError('raw_value_cm exceeds maximum sensor range (10m)')
+        return round(v, 2)
+
+    @field_validator('temperature_c')
+    @classmethod
+    def validate_temp(cls, v: float) -> float:
+        if v < -50 or v > 100:
+            raise ValueError('temperature_c out of real-world operating range')
+        return round(v, 1)
+
+    @field_validator('fuel_percentage')
+    @classmethod
+    def validate_percentage(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None:
+            if v < 0 or v > 100:
+                raise ValueError('fuel_percentage must be between 0 and 100')
+            return round(v, 2)
+        return v
     
     class Config:
         populate_by_name = True  # Allow both field name and alias
@@ -63,7 +107,7 @@ class FuelLevelResponse(BaseModel):
 from gateway.supabase_rest import store_telemetry, get_latest_reading, get_history, store_alert, SUPABASE_AVAILABLE
 
 @app.post("/api/logs")
-async def ingest_telemetry(telemetry: TelemetryData):
+async def ingest_telemetry(telemetry: TelemetryData, api_key: str = Depends(get_api_key)):
     """Receive telemetry data from sensors"""
     try:
         logger.info(f"📡 Received telemetry from {telemetry.device_id}")

@@ -1,10 +1,11 @@
 <?php
+require_once __DIR__ . '/config.php';
 
-$host = "db.shdaldiqnbtlgjajxroi.supabase.co";
-$port = "5432";
-$dbname = "postgres";
-$user = "postgres";
-$password = "RangerFord828@2";
+$host = DB_HOST;
+$port = DB_PORT;
+$dbname = DB_NAME;
+$user = DB_USER;
+$password = DB_PASS;
 
 try {
     $pdo = new PDO(
@@ -15,10 +16,8 @@ try {
 
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    echo "Connected successfully";
-
+    // Removed "Connected successfully" echo to prevent JSON corruption in API calls
 } catch (PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
+    die(json_encode(["success" => false, "message" => "Connection failed: " . $e->getMessage()]));
 }
-
 ?>

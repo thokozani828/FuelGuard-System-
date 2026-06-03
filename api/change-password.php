@@ -10,8 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-define('SUPABASE_URL', 'https://shdaldiqnbtlgjajxroi.supabase.co');
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo');
+require_once dirname(__DIR__) . '/config.php';
 
 function hashPassword($password) {
     return hash('sha256', $password);
@@ -101,9 +100,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    $hashedCurrentPassword = hashPassword($currentPassword);
+    $hashedCurrentPassword = hash('sha256', $currentPassword);
     
-    if ($hashedCurrentPassword !== ($driver['password_hash'] ?? '')) {
+    if (password_verify($currentPassword, $driver['password_hash'] ?? '')) {
+        // Correct
+    } elseif ($hashedCurrentPassword === ($driver['password_hash'] ?? '')) {
+        // Legacy SHA256 correct
+    } else {
         echo json_encode([
             'status' => 401,
             'message' => 'Current password is incorrect'
@@ -111,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    $newPasswordHash = hashPassword($newPassword);
+    $newPasswordHash = password_hash($newPassword, PASSWORD_BCRYPT);
     $updated = updateDriverPassword($driverId, $newPasswordHash, $newPassword);
     
     if ($updated) {

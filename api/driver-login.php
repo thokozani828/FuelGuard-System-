@@ -9,9 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Supabase Configuration
-define('SUPABASE_URL', 'https://shdaldiqnbtlgjajxroi.supabase.co');
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo');
+require_once dirname(__DIR__) . '/config.php';
 
 function hashPassword($password) {
     return hash('sha256', $password);
@@ -50,8 +48,11 @@ if (!$driver) {
 }
 
 // Verify password
-$hashedPassword = hashPassword($password);
-if ($hashedPassword !== ($driver['password_hash'] ?? '')) {
+if (password_verify($password, $driver['password_hash'] ?? '')) {
+    // If it's a legacy SHA256 hash (64 chars), verify it that way too for migration
+} elseif (hash('sha256', $password) === ($driver['password_hash'] ?? '')) {
+    // Legacy support
+} else {
     echo json_encode(['status' => 401, 'message' => 'Invalid password']);
     exit();
 }
@@ -63,6 +64,11 @@ if ($driver['status'] === 'blocked') {
 }
 
 // Return success
+session_start();
+$_SESSION['driver_id'] = $driver['driver_id'];
+$_SESSION['full_name'] = $driver['full_name'];
+$_SESSION['role'] = 'driver';
+
 $sessionToken = bin2hex(random_bytes(32));
 $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
