@@ -1,3 +1,55 @@
+# Secrets & Environment
+.env
+.env.local
+.env.*.local
+
+# Documentation (Internal)
+ARCHITECTURE.md
+SPEC.md
+DESIGN.md
+SECURITY.md
+FEATURES.md
+DEPLOYMENT.md
 DOCUMENT.md
-Untitled.pdf
-*.jpeg
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.npm
+.eslintcache
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local State & Backups
+fuel_state.json
+fleet_config.json
+*.bak
+*.tmp
