@@ -1,14 +1,11 @@
-# api.py
+# gateway/api.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, List, Optional
 from collections import defaultdict
 from datetime import datetime
 import logging
-
-from .models import TelemetryData, FuelLevelResponse, SensorType
-from .fuel_engine import FuelLevelEngine, TankConfig
-from .supabase_rest import store_telemetry, get_latest_reading, get_history, store_alert
+from pydantic import BaseModel, Field
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -25,164 +22,152 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Tank configurations - Add your fleet trucks here
-TANK_CONFIGS = {
-    "SENSOR_001": TankConfig(  # Map sensor to tank config
-        tank_id="TRK001",
-        tank_height_cm=120.0,
-        tank_cross_section_area_m2=2.5,
-        dead_zone_cm=5.0,
-        max_capacity_liters=3000.0
-    ),
-    "SENSOR_002": TankConfig(
-        tank_id="TRK002",
-        tank_height_cm=130.0,
-        tank_cross_section_area_m2=2.8,
-        dead_zone_cm=5.0,
-        max_capacity_liters=3500.0
-    ),
-    "SENSOR_003": TankConfig(
-        tank_id="TRK003",
-        tank_height_cm=115.0,
-        tank_cross_section_area_m2=2.4,
-        dead_zone_cm=5.0,
-        max_capacity_liters=2800.0
-    ),
-    "SENSOR_004": TankConfig(
-        tank_id="TRK004",
-        tank_height_cm=140.0,
-        tank_cross_section_area_m2=3.0,
-        dead_zone_cm=5.0,
-        max_capacity_liters=4000.0
-    ),
-    "SENSOR_005": TankConfig(
-        tank_id="TRK005",
-        tank_height_cm=125.0,
-        tank_cross_section_area_m2=2.6,
-        dead_zone_cm=5.0,
-        max_capacity_liters=3200.0
-    ),
-    "tank_001": TankConfig(  # Keep original for compatibility
-        tank_id="tank_001",
-        tank_height_cm=120.0,
-        tank_cross_section_area_m2=2.5,
-        dead_zone_cm=5.0,
-        max_capacity_liters=3000.0
-    ),
-    "tank_002": TankConfig(
-        tank_id="tank_002",
-        tank_height_cm=150.0,
-        tank_cross_section_area_m2=3.0,
-        dead_zone_cm=8.0,
-        max_capacity_liters=4500.0
-    )
-}
+# Pydantic models for request validation
+class TelemetryData(BaseModel):
+    device_id: str
+    sensor_type: str = "ultrasonic"
+    raw_value_cm: float = Field(..., alias="raw_value_cm")  # Accept raw_value_cm
+    temperature_c: float = Field(..., alias="temperature_c")
+    timestamp: Optional[str] = None
+    truck_id: Optional[str] = None
+    license_plate: Optional[str] = None
+    driver_name: Optional[str] = None
+    fuel_level_cm: Optional[float] = None
+    fuel_percentage: Optional[float] = None
+    fuel_volume_liters: Optional[float] = None
+    tank_capacity_liters: Optional[float] = None
+    status: Optional[str] = None
+    # Location fields
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    location_name: Optional[str] = None
+    odometer_km: Optional[float] = None
+    speed_kmh: Optional[float] = None
+    trip_distance_km: Optional[float] = None
+    
+    class Config:
+        populate_by_name = True  # Allow both field name and alias
 
-# Helper function to get truck info from sensor ID
-def get_truck_info_from_sensor(device_id: str) -> Dict[str, Optional[str]]:
-    """Map sensor ID to truck information"""
-    sensor_to_truck = {
-        "SENSOR_001": {"truck_id": "TRK001", "license_plate": "ABC-1234", "driver_name": "John Smith"},
-        "SENSOR_002": {"truck_id": "TRK002", "license_plate": "XYZ-5678", "driver_name": "Sarah Johnson"},
-        "SENSOR_003": {"truck_id": "TRK003", "license_plate": "DEF-9012", "driver_name": "Mike Wilson"},
-        "SENSOR_004": {"truck_id": "TRK004", "license_plate": "GHI-3456", "driver_name": "Emma Brown"},
-        "SENSOR_005": {"truck_id": "TRK005", "license_plate": "JKL-7890", "driver_name": "David Lee"},
-        "tank_001": {"truck_id": "TRK001", "license_plate": "ABC-1234", "driver_name": "John Smith"},
-        "tank_002": {"truck_id": "TRK002", "license_plate": "XYZ-5678", "driver_name": "Sarah Johnson"},
-    }
-    return sensor_to_truck.get(device_id, {})
+class FuelLevelResponse(BaseModel):
+    device_id: str
+    fuel_level_cm: float
+    fuel_level_percentage: float
+    fuel_volume_liters: float
+    status: str
+    truck_id: Optional[str] = None
+    license_plate: Optional[str] = None
+    driver_name: Optional[str] = None
+    timestamp: str
 
-# Initialize engine
-fuel_engine = FuelLevelEngine(TANK_CONFIGS)
+# Import Supabase functions
+from gateway.supabase_rest import store_telemetry, get_latest_reading, get_history, store_alert, SUPABASE_AVAILABLE
 
-# In-memory storage for recent readings (for smoothing)
-recent_readings: Dict[str, List[float]] = {}
-
-@app.post("/api/logs", response_model=FuelLevelResponse)
+@app.post("/api/logs")
 async def ingest_telemetry(telemetry: TelemetryData):
+    """Receive telemetry data from sensors"""
     try:
-        logger.info(f"Received telemetry from {telemetry.device_id}: {telemetry.raw_value}cm")
+        logger.info(f"📡 Received telemetry from {telemetry.device_id}")
         
-        # Get truck information for this sensor
-        truck_info = get_truck_info_from_sensor(telemetry.device_id)
-        truck_id = truck_info.get("truck_id")
-        license_plate = truck_info.get("license_plate")
-        driver_name = truck_info.get("driver_name")
+        # Calculate fuel metrics if not provided
+        fuel_percentage = telemetry.fuel_percentage
+        fuel_volume = telemetry.fuel_volume_liters
+        fuel_level = telemetry.fuel_level_cm
+        status = telemetry.status
         
-        # Store recent reading for smoothing
-        if telemetry.device_id not in recent_readings:
-            recent_readings[telemetry.device_id] = []
-        recent_readings[telemetry.device_id].append(telemetry.raw_value)
+        # If fuel metrics not provided, calculate them
+        if fuel_percentage is None and telemetry.tank_capacity_liters:
+            # Calculate from raw value (distance from top)
+            tank_height = 120.0  # Default tank height
+            fuel_level = tank_height - telemetry.raw_value_cm
+            fuel_percentage = (fuel_level / tank_height) * 100
+            fuel_volume = (fuel_percentage / 100) * telemetry.tank_capacity_liters
+            
+            # Determine status
+            if fuel_percentage >= 75:
+                status = "NORMAL"
+            elif fuel_percentage >= 50:
+                status = "NORMAL"
+            elif fuel_percentage >= 25:
+                status = "WARNING"
+            elif fuel_percentage >= 10:
+                status = "LOW"
+            else:
+                status = "CRITICAL"
         
-        # Keep last 10 readings
-        if len(recent_readings[telemetry.device_id]) > 10:
-            recent_readings[telemetry.device_id].pop(0)
-        
-        # Apply smoothing
-        smoothed_distance = fuel_engine.smooth_readings(recent_readings[telemetry.device_id])
-        
-        # Create copy with smoothed value and truck info
-        smoothed_telemetry = TelemetryData(
-            device_id=telemetry.device_id,
-            sensor_type=telemetry.sensor_type,
-            raw_value=smoothed_distance,
-            temperature=telemetry.temperature,
-            timestamp=telemetry.timestamp
-        )
-        
-        # Calculate fuel level
-        fuel_level = fuel_engine.calculate_fuel_level(smoothed_telemetry)
-        
-        if not fuel_level:
-            raise HTTPException(status_code=404, detail=f"Device {telemetry.device_id} not configured")
-        
-        # Add truck info to response
-        fuel_level.truck_id = truck_id
-        fuel_level.license_plate = license_plate
-        fuel_level.driver_name = driver_name
-        
-        # Prepare data for Supabase
-        supabase_data = {
+        # Prepare data for storage
+        storage_data = {
             "device_id": telemetry.device_id,
-            "sensor_type": telemetry.sensor_type.value if hasattr(telemetry.sensor_type, 'value') else str(telemetry.sensor_type),
-            "raw_value_cm": telemetry.raw_value,
-            "temperature_c": telemetry.temperature,
-            "fuel_level_cm": fuel_level.fuel_level_cm,
-            "fuel_percentage": fuel_level.fuel_level_percentage,
-            "fuel_volume_liters": fuel_level.fuel_volume_liters,
-            "status": fuel_level.status,
-            "truck_id": truck_id,
-            "driver_name": driver_name,
-            "license_plate": license_plate,
-            "timestamp": telemetry.timestamp.isoformat() if hasattr(telemetry.timestamp, 'isoformat') else str(telemetry.timestamp)
+            "sensor_type": telemetry.sensor_type,
+            "raw_value_cm": telemetry.raw_value_cm,
+            "temperature_c": telemetry.temperature_c,
+            "fuel_level_cm": fuel_level or telemetry.fuel_level_cm,
+            "fuel_percentage": fuel_percentage,
+            "fuel_volume_liters": fuel_volume,
+            "status": status,
+            "truck_id": telemetry.truck_id,
+            "driver_name": telemetry.driver_name,
+            "license_plate": telemetry.license_plate,
+            "tank_capacity_liters": telemetry.tank_capacity_liters,
+            "timestamp": telemetry.timestamp or datetime.utcnow().isoformat(),
+            # Location data
+            "latitude": telemetry.latitude,
+            "longitude": telemetry.longitude,
+            "location_name": telemetry.location_name,
+            "odometer_km": telemetry.odometer_km,
+            "speed_kmh": telemetry.speed_kmh,
+            "trip_distance_km": telemetry.trip_distance_km
         }
         
-        # Store in Supabase (cloud database)
-        try:
-            store_telemetry(supabase_data)
-            logger.info(f"Stored telemetry for {telemetry.device_id} in Supabase")
-        except Exception as e:
-            logger.error(f"Failed to store in Supabase: {e}")
-            # Continue even if Supabase fails
+        # Remove None values
+        storage_data = {k: v for k, v in storage_data.items() if v is not None}
+        
+        # Store in Supabase
+        supabase_success = False
+        if SUPABASE_AVAILABLE:
+            supabase_success = store_telemetry(storage_data)
         
         # Check for alerts
-        if fuel_level.status in ["CRITICAL", "EMPTY"]:
-            alert_msg = f"Fuel level at {fuel_level.fuel_level_percentage:.1f}%"
-            if truck_id:
-                alert_msg = f"Truck {truck_id}: {alert_msg}"
+        if fuel_percentage and fuel_percentage < 15:
+            alert_type = "CRITICAL" if fuel_percentage < 10 else "LOW"
+            alert_msg = f"Fuel level at {fuel_percentage:.1f}%"
+            if telemetry.truck_id:
+                alert_msg = f"Truck {telemetry.truck_id}: {alert_msg}"
+            
             logger.warning(f"⚠️ ALERT: {alert_msg}")
-            # Store alert in Supabase
-            try:
-                store_alert(telemetry.device_id, fuel_level.status, alert_msg, truck_id)
-            except Exception as e:
-                logger.error(f"Failed to store alert: {e}")
+            
+            # Store alert
+            if SUPABASE_AVAILABLE:
+                store_alert(
+                    telemetry.device_id,
+                    alert_type,
+                    alert_msg,
+                    telemetry.truck_id
+                )
         
-        return fuel_level
+        # Prepare response
+        response = FuelLevelResponse(
+            device_id=telemetry.device_id,
+            fuel_level_cm=fuel_level or 0,
+            fuel_level_percentage=fuel_percentage or 0,
+            fuel_volume_liters=fuel_volume or 0,
+            status=status or "UNKNOWN",
+            truck_id=telemetry.truck_id,
+            license_plate=telemetry.license_plate,
+            driver_name=telemetry.driver_name,
+            timestamp=datetime.utcnow().isoformat()
+        )
         
-    except HTTPException:
-        raise
+        logger.info(f"✅ Processed telemetry for {telemetry.device_id} - Fuel: {fuel_percentage:.1f}%")
+        
+        return {
+            "status": "success",
+            "message": "Telemetry processed",
+            "data": response.dict(),
+            "supabase_stored": supabase_success
+        }
+        
     except Exception as e:
-        logger.error(f"Error processing telemetry: {str(e)}", exc_info=True)
+        logger.error(f"❌ Error processing telemetry: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/logs/{device_id}/latest")
@@ -191,7 +176,10 @@ async def get_latest_reading_endpoint(device_id: str):
     try:
         result = get_latest_reading(device_id)
         if result:
-            return result
+            return {
+                "status": "success",
+                "data": result
+            }
         raise HTTPException(status_code=404, detail="No data found")
     except Exception as e:
         logger.error(f"Error getting latest reading: {e}")
@@ -204,6 +192,7 @@ async def get_history_endpoint(device_id: str, limit: int = 100):
         result = get_history(device_id, limit)
         if result:
             return {
+                "status": "success",
                 "device_id": device_id,
                 "count": len(result),
                 "data": result
@@ -217,11 +206,24 @@ async def get_history_endpoint(device_id: str, limit: int = 100):
 async def get_fleet_status():
     """Get current fuel status for all trucks in fleet"""
     try:
-        from .supabase_rest import get_fleet_status as get_supabase_fleet_status
-        fleet_data = get_supabase_fleet_status()
+        from gateway.supabase_rest import get_fleet_status as get_supabase_fleet_status
+        fleet_data = get_supabase_fleet_status(display=False)
+        
+        # Add summary
+        total_trucks = len(fleet_data)
+        avg_fuel = sum(t.get('fuel_percentage', 0) for t in fleet_data) / total_trucks if total_trucks > 0 else 0
+        critical = sum(1 for t in fleet_data if t.get('fuel_percentage', 0) < 15)
+        low = sum(1 for t in fleet_data if 15 <= t.get('fuel_percentage', 0) < 30)
+        
         return {
+            "status": "success",
             "timestamp": datetime.now().isoformat(),
-            "total_trucks": len(fleet_data),
+            "summary": {
+                "total_trucks": total_trucks,
+                "average_fuel_percentage": round(avg_fuel, 1),
+                "critical_fuel": critical,
+                "low_fuel": low
+            },
             "trucks": fleet_data
         }
     except Exception as e:
@@ -232,25 +234,40 @@ async def get_fleet_status():
 async def get_truck_status(truck_id: str):
     """Get fuel status for a specific truck"""
     try:
-        from .supabase_rest import get_truck_summary
+        from gateway.supabase_rest import get_truck_summary
         truck_data = get_truck_summary(truck_id)
         if truck_data:
-            return truck_data
+            return {
+                "status": "success",
+                "data": truck_data
+            }
         raise HTTPException(status_code=404, detail=f"Truck {truck_id} not found")
     except Exception as e:
         logger.error(f"Error getting truck status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/devices")
-async def list_devices():
-    return {"devices": list(TANK_CONFIGS.keys())}
+@app.get("/api/alerts/active")
+async def get_active_alerts():
+    """Get all active alerts"""
+    try:
+        from gateway.supabase_rest import get_active_alerts
+        alerts = get_active_alerts(display=False)
+        return {
+            "status": "success",
+            "count": len(alerts),
+            "alerts": alerts
+        }
+    except Exception as e:
+        logger.error(f"Error getting alerts: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/health")
 async def health_check():
+    """Health check endpoint"""
     try:
         # Check Supabase connection
-        from .supabase_rest import SUPABASE_AVAILABLE
-        db_status = "Connected" if SUPABASE_AVAILABLE else "Not connected"
+        from gateway.supabase_rest import SUPABASE_AVAILABLE, test_connection
+        db_status = "Connected" if SUPABASE_AVAILABLE and test_connection() else "Not connected"
     except:
         db_status = "Unknown"
     
@@ -258,21 +275,25 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "database": f"Supabase: {db_status}",
-        "active_sensors": len(TANK_CONFIGS)
+        "service": "FuelGuard IoT Gateway"
     }
 
 @app.get("/")
 async def root():
     return {
-        "message": "FuelGuard IoT Gateway with Supabase Database",
-        "version": "1.0.0",
+        "message": "FuelGuard IoT Gateway with Location Tracking",
+        "version": "1.1.0",
         "endpoints": {
-            "POST /api/logs": "Send telemetry data",
+            "POST /api/logs": "Send telemetry data (with location)",
             "GET /api/logs/{device_id}/latest": "Get latest reading",
             "GET /api/logs/{device_id}/history": "Get historical data",
             "GET /api/fleet/status": "Get all truck statuses",
             "GET /api/fleet/truck/{truck_id}": "Get specific truck status",
-            "GET /api/devices": "List all devices",
+            "GET /api/alerts/active": "Get active alerts",
             "GET /api/health": "Health check"
         }
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

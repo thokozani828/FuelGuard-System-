@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>FleetGuard Pro | Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --fuel-orange: #ff6b35;
+            --fuel-orange-dark: #e55a2b;
+            --fuel-orange-light: #ff8c5a;
+            --deep-green: #1a472a;
+            --deep-green-dark: #0d2818;
+            --deep-green-light: #2a5a3a;
+            --cream: #fdfbf7;
+            --cream-dark: #f5f1e8;
+            --sand: #e8e1d3;
+            --shadow-medium: 0 20px 50px rgba(0,0,0,0.08);
+            --shadow-light: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(160deg, #f5f1e8 0%, #e8e1d3 40%, #d9cfb8 100%);
+            overflow-x: hidden;
+            color: #2e2922;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--sand); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, var(--fuel-orange), var(--fuel-orange-light)); border-radius: 10px; }
+
+        /* SIDEBAR STYLES */
+        .premium-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--deep-green) 0%, var(--deep-green-dark) 100%);
+            border-right: 1px solid rgba(255,107,53,0.25);
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .premium-sidebar::-webkit-scrollbar { width: 4px; }
+        .premium-sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        .premium-sidebar::-webkit-scrollbar-thumb { background: var(--fuel-orange); }
+
+        .sidebar-brand {
+            padding: 28px 24px;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .sidebar-brand::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--fuel-orange), var(--fuel-orange-light));
+        }
+
+        .sidebar-brand h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--fuel-orange-light), var(--fuel-orange));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .sidebar-brand p {
+            font-size: 10px;
+            color: var(--fuel-orange-light);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
+        /* ========== FIXED NAVIGATION WITH SECTION TITLES ========== */
+        .nav-menu-vertical {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 16px;
+        }
+
+        .nav-section-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--fuel-orange-light);
+            padding: 12px 16px 4px;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .nav-item-vert {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 500;
+            font-size: 13px;
+            color: #c8d5b9;
+            text-decoration: none;
+        }
+
+        .nav-item-vert i {
+            width: 20px;
+            font-size: 16px;
+        }
+
+        .nav-item-vert:hover {
+            background: rgba(255,107,53,0.15);
+            color: var(--fuel-orange-light);
+            transform: translateX(4px);
+        }
+
+        .nav-item-vert.active {
+            background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,107,53,0.08));
+            color: var(--fuel-orange);
+            border-left: 3px solid var(--fuel-orange);
+        }
+
+        .alert-badge-side {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        .nav-badge {
+            background: linear-gradient(135deg, var(--fuel-orange), var(--fuel-orange-dark));
+            color: white;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        .version-tag {
+            padding: 16px 24px;
+            font-size: 10px;
+            color: var(--fuel-orange-light);
+            border-top: 1px solid rgba(255,107,53,0.2);
+            margin-top: auto;
+        }
+
+        .logout-footer {
+            margin: 16px 16px 24px;
+            padding: 10px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            font-size: 13px;
+        }
+
+        .logout-footer:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        .main-panel {
+            margin-left: 280px;
+            padding: 28px 32px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255,107,53,0.2);
+        }
+
+        .title-area h2 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--deep-green), var(--fuel-orange-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .title-area p {
+            font-size: 12px;
+            color: #7a7060;
+            margin-top: 4px;
+        }
+
+        .settings-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid rgba(255,107,53,0.2);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #7a7060;
+            transition: all 0.3s;
+            border-radius: 40px;
+        }
+
+        .tab-btn.active {
+            background: var(--fuel-orange);
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,107,53,0.1);
+            color: var(--fuel-orange);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .settings-card {
+            background: rgba(255,255,250,0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255,107,53,0.12);
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .settings-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--deep-green);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255,107,53,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5a5244;
+            margin-bottom: 6px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: white;
+            border: 1.5px solid #e0d8c8;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--fuel-orange);
+            outline: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        .btn-save {
+            background: var(--fuel-orange);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-save:hover {
+            background: var(--fuel-orange-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .users-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .users-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th, .users-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,107,53,0.1);
+        }
+
+        .users-table th {
+            font-weight: 700;
+            color: #7a7060;
+            font-size: 12px;
+        }
+
+        .users-table td {
+            font-size: 13px;
+        }
+
+        .role-badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .role-admin { background: rgba(239,68,68,0.15); color: #dc2626; }
+        .role-manager { background: rgba(245,158,11,0.12); color: #d97706; }
+        .role-dispatcher { background: rgba(59,130,246,0.1); color: #3b82f6; }
+        .role-driver { background: rgba(26,71,42,0.12); color: var(--deep-green); }
+        .role-viewer { background: rgba(26,71,42,0.08); color: #5a5244; }
+        .role-technician { background: rgba(59,130,246,0.1); color: #3b82f6; }
+
+        .status-active { color: #10b981; font-weight: 600; }
+        .status-pending { color: #d97706; font-weight: 600; }
+        .status-inactive { color: #dc2626; font-weight: 600; }
+
+        .action-icons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-icon {
+            cursor: pointer;
+            color: #a0917c;
+            transition: all 0.2s;
+        }
+
+        .action-icon:hover {
+            color: var(--fuel-orange);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.25s;
+        }
+
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+
+        .modal-card {
+            background: rgba(255,255,250,0.98);
+            border-radius: 28px;
+            max-width: 500px;
+            width: 90%;
+            padding: 28px;
+            border: 1px solid rgba(255,107,53,0.2);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .modal-card h3 { margin-bottom: 20px; font-size: 22px; font-weight: 700; color: var(--deep-green); }
+        .modal-card input, .modal-card select {
+            width: 100%;
+            padding: 12px 14px;
+            margin: 6px 0 16px;
+            border-radius: 14px;
+            background: white;
+            border: 1.5px solid #e0d8c8;
+        }
+
+        .modal-buttons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+        .btn-modal { padding: 10px 24px; border-radius: 40px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,107,53,0.3);
+            border-top-color: var(--fuel-orange);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer-bar {
+            margin-top: 32px;
+            background: rgba(255,255,250,0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 11px;
+            color: #7a7060;
+            border: 1px solid rgba(255,107,53,0.12);
+        }
+
+        @media (max-width: 900px) {
+            .premium-sidebar { width: 80px; }
+            .premium-sidebar .sidebar-brand h1 { font-size: 0; }
+            .premium-sidebar .sidebar-brand p { display: none; }
+            .premium-sidebar .nav-section-title { display: none; }
+            .premium-sidebar .nav-item-vert span:not(:first-child) { display: none; }
+            .premium-sidebar .version-tag { display: none; }
+            .premium-sidebar .logout-footer span:not(:first-child) { display: none; }
+            .main-panel { margin-left: 80px; padding: 20px; }
+            .nav-item-vert { justify-content: center; }
+            .logout-footer { justify-content: center; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <aside class="premium-sidebar">
+        <div class="sidebar-brand">
+            <h1><i class="fas fa-gas-pump"></i> FleetGuard Pro</h1>
+            <p>AI POWERED</p>
+        </div>
+        
+        <!-- ========== FIXED NAVIGATION BAR - ONLY THIS SECTION WAS CHANGED ========== -->
+        <div class="nav-menu-vertical">
+            <div class="nav-section-title">FLEET OPERATIONS</div>
+            <a href="dashboard.html" class="nav-item-vert"><i class="fas fa-chart-line"></i><span>Overview</span></a>
+            <a href="team.html" class="nav-item-vert"><i class="fas fa-users"></i><span>Add Drivers</span></a>
+            <a href="trucks.html" class="nav-item-vert"><i class="fas fa-truck"></i><span>Add Truck</span></a>
+            <a href="sensors.html" class="nav-item-vert"><i class="fas fa-microchip"></i><span>Add Sensors</span></a>
+            
+            <div class="nav-section-title" style="margin-top: 12px;">MONITORING & ALERTS</div>
+            <a href="alerts.html" class="nav-item-vert"><i class="fas fa-bell"></i><span>Alerts</span><span class="alert-badge-side" id="sideAlertBadge">3</span></a>
+            <a href="refueling.html" class="nav-item-vert"><i class="fas fa-oil-can"></i><span>Refueling</span></a>
+            <a href="telemetry.html" class="nav-item-vert"><i class="fas fa-tachometer-alt"></i><span>Telemetry</span></a>
+            
+            <div class="nav-section-title" style="margin-top: 12px;">ADVANCED ANALYTICS</div>
+            <a href="integrations.html" class="nav-item-vert"><i class="fas fa-plug"></i><span>Integrations</span></a>
+            <a href="maintenance.html" class="nav-item-vert"><i class="fas fa-tools"></i><span>Maintenance</span></a>
+            <a href="ai-analytics.html" class="nav-item-vert"><i class="fas fa-brain"></i><span>AI Analytics</span><span class="nav-badge">NEW</span></a>
+            <a href="settings.html" class="nav-item-vert active"><i class="fas fa-cog"></i><span>Settings</span></a>
+        </div>
+        <!-- ========== END OF NAVIGATION BAR FIX ========== -->
+        
+        <div class="version-tag"><i class="fas fa-code-branch"></i> AI Version 1.0</div>
+        <div class="logout-footer" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Sign out</span></div>
+    </aside>
+
+    <main class="main-panel">
+        <div class="page-header">
+            <div class="title-area">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <p>Manage your profile, preferences, and system settings</p>
+            </div>
+        </div>
+
+        <div class="settings-tabs">
+            <button class="tab-btn active" data-tab="profile">👤 Profile</button>
+            <button class="tab-btn" data-tab="preferences">🎨 Preferences</button>
+            <button class="tab-btn" data-tab="users">👥 Users</button>
+            <button class="tab-btn" data-tab="security">🔒 Security</button>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profile" class="tab-content active">
+            <div class="settings-card">
+                <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
+                <form id="profileForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address *</label>
+                            <input type="email" id="email" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="phone">
+                        </div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="username" readonly style="background:#f0ede8;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Update Profile</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preferences Tab -->
+        <div id="preferences" class="tab-content">
+            <div class="settings-card">
+                <h3><i class="fas fa-palette"></i> Appearance & Preferences</h3>
+                <form id="preferencesForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Theme</label>
+                            <select id="theme">
+                                <option value="light">☀️ Light</option>
+                                <option value="dark">🌙 Dark</option>
+                                <option value="system">💻 System Default</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Language</label>
+                            <select id="language">
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                                <option value="es">Español</option>
+                                <option value="pt">Português</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Timezone</label>
+                            <select id="timezone">
+                                <option value="Africa/Johannesburg">Africa/Johannesburg</option>
+                                <option value="America/New_York">America/New_York</option>
+                                <option value="Europe/London">Europe/London</option>
+                                <option value="Asia/Dubai">Asia/Dubai</option>
+                                <option value="Australia/Sydney">Australia/Sydney</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date Format</label>
+                            <select id="dateFormat">
+                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="notifications">
+                        <label>Enable Email Notifications</label>
+                    </div>
+                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Preferences</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Users Tab (Admin only) -->
+        <div id="users" class="tab-content">
+            <div class="settings-card">
+                <h3><i class="fas fa-users"></i> User Management</h3>
+                <button class="btn-save" onclick="openUserModal()" style="margin-bottom: 20px;"><i class="fas fa-user-plus"></i> Add New User</button>
+                <div class="users-table">
+                    <table>
+                        <thead>
+                            <tr><th>User ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="6"><div class="loading-spinner"></div> Loading users...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="security" class="tab-content">
+            <div class="settings-card">
+                <h3><i class="fas fa-key"></i> Change Password</h3>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input type="password" id="currentPassword" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-save"><i class="fas fa-key"></i> Change Password</button>
+                </form>
+            </div>
+            <div class="settings-card">
+                <h3><i class="fas fa-history"></i> Session Management</h3>
+                <button class="btn-danger" onclick="logoutAllDevices()"><i class="fas fa-sign-out-alt"></i> Logout from all devices</button>
+            </div>
+        </div>
+
+        <div class="footer-bar">
+            <div><i class="fas fa-cog"></i> System Settings · Role-based access control</div>
+            <div><i class="fas fa-globe"></i> FleetGuard Pro v1.0 | <span id="liveClock"></span></div>
+        </div>
+    </main>
+</div>
+
+<!-- User Modal -->
+<div id="userModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="userModalTitle">Add New User</h3>
+        <input type="text" id="userFullName" placeholder="Full Name">
+        <input type="email" id="userEmail" placeholder="Email">
+        <input type="text" id="userPhone" placeholder="Phone">
+        <input type="text" id="userUsername" placeholder="Username">
+        <input type="password" id="userPassword" placeholder="Password">
+        <select id="userRole">
+            <option value="viewer">Viewer</option>
+            <option value="dispatcher">Dispatcher</option>
+            <option value="driver">Driver</option>
+            <option value="technician">Technician</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+        </select>
+        <select id="userStatus">
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="inactive">Inactive</option>
+        </select>
+        <div class="modal-buttons">
+            <button class="btn-modal" id="modalCancelBtn" style="background:#e0d8c8;">Cancel</button>
+            <button class="btn-modal" id="modalConfirmBtn" style="background:var(--fuel-orange); color:white;">Save User</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'api/settings.php';
+    let currentUser = null;
+    let users = [];
+    let editingUserId = null;
+
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const clockElement = document.getElementById('liveClock');
+        if (clockElement) clockElement.innerText = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function showNotification(msg, type = 'info') {
+        const notif = document.createElement('div');
+        const bgColor = type === 'error' ? '#dc2626' : type === 'success' ? '#1a472a' : '#ff6b35';
+        const icon = type === 'error' ? 'fa-exclamation-triangle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+        notif.innerHTML = `<div style="position:fixed; bottom:20px; right:20px; background:${bgColor}; color:white; padding:12px 24px; border-radius:40px; z-index:10000; font-size:13px;"><i class="fas ${icon}"></i> ${escapeHtml(msg)}</div>`;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    async function loadProfile() {
+        try {
+            const response = await fetch(`${API_URL}?action=getProfile`);
+            const result = await response.json();
+            if (result.status === 200 && result.data) {
+                currentUser = result.data;
+                document.getElementById('fullName').value = currentUser.full_name || '';
+                document.getElementById('email').value = currentUser.email || '';
+                document.getElementById('phone').value = currentUser.phone || '';
+                document.getElementById('username').value = currentUser.username || '';
+                document.getElementById('theme').value = currentUser.theme_preference || 'light';
+                document.getElementById('language').value = currentUser.language || 'en';
+                document.getElementById('timezone').value = currentUser.timezone || 'Africa/Johannesburg';
+                document.getElementById('notifications').checked = currentUser.notification_enabled || false;
+            }
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            showNotification('Failed to load profile', 'error');
+        }
+    }
+
+    async function loadUsers() {
+        try {
+            const response = await fetch(`${API_URL}?action=getAll`);
+            const result = await response.json();
+            if (result.status === 200 && result.data) {
+                users = result.data;
+                renderUsersTable();
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="6">Error loading users</td></tr>';
+        }
+    }
+
+    function renderUsersTable() {
+        const tbody = document.getElementById('usersTableBody');
+        if (!users || users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No users found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td>${escapeHtml(user.user_id)}</td>
+                <td>${escapeHtml(user.full_name)}</td>
+                <td>${escapeHtml(user.email)}</td>
+                <td><span class="role-badge role-${user.role}">${escapeHtml(user.role).toUpperCase()}</span></td>
+                <td class="status-${user.status}">${escapeHtml(user.status).toUpperCase()}</td>
+                <td class="action-icons">
+                    <i class="fas fa-edit action-icon" onclick="editUser('${user.user_id}')" title="Edit"></i>
+                    <i class="fas fa-trash-alt action-icon" onclick="deleteUser('${user.user_id}')" title="Delete" style="color:#dc2626;"></i>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function updateProfile(event) {
+        event.preventDefault();
+        const profileData = {
+            full_name: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}?action=updateProfile`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(profileData)
+            });
+            const result = await response.json();
+            if (result.status === 200) {
+                showNotification('Profile updated successfully!', 'success');
+                loadProfile();
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+        }
+    }
+
+    async function updatePreferences(event) {
+        event.preventDefault();
+        const prefData = {
+            theme_preference: document.getElementById('theme').value,
+            language: document.getElementById('language').value,
+            timezone: document.getElementById('timezone').value,
+            notification_enabled: document.getElementById('notifications').checked
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}?action=updateProfile`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(prefData)
+            });
+            const result = await response.json();
+            if (result.status === 200) {
+                showNotification('Preferences saved!', 'success');
+                applyTheme(prefData.theme_preference);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+        }
+    }
+
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            document.body.style.background = '#1a1a2e';
+        } else {
+            document.body.style.background = 'linear-gradient(160deg, #f5f1e8 0%, #e8e1d3 40%, #d9cfb8 100%)';
+        }
+    }
+
+    async function changePassword(event) {
+        event.preventDefault();
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (newPassword !== confirmPassword) {
+            showNotification('Passwords do not match!', 'error');
+            return;
+        }
+        if (newPassword.length < 6) {
+            showNotification('Password must be at least 6 characters', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_URL}?action=updateProfile`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: newPassword })
+            });
+            const result = await response.json();
+            if (result.status === 200) {
+                showNotification('Password changed successfully!', 'success');
+                document.getElementById('passwordForm').reset();
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+        }
+    }
+
+    async function saveUser() {
+        const userData = {
+            full_name: document.getElementById('userFullName').value,
+            email: document.getElementById('userEmail').value,
+            phone: document.getElementById('userPhone').value,
+            username: document.getElementById('userUsername').value,
+            password: document.getElementById('userPassword').value,
+            role: document.getElementById('userRole').value,
+            status: document.getElementById('userStatus').value
+        };
+        
+        if (!userData.full_name || !userData.email || !userData.username) {
+            showNotification('Please fill required fields', 'error');
+            return;
+        }
+        
+        const url = editingUserId ? `${API_URL}?action=updateUser&id=${editingUserId}` : `${API_URL}?action=createUser`;
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+            const result = await response.json();
+            if (result.status === 200 || result.status === 201) {
+                showNotification(`User ${editingUserId ? 'updated' : 'created'} successfully!`, 'success');
+                closeUserModal();
+                loadUsers();
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+        }
+    }
+
+    async function deleteUser(userId) {
+        if (!confirm(`Delete user ${userId}? This action cannot be undone.`)) return;
+        
+        try {
+            const response = await fetch(`${API_URL}?action=deleteUser&id=${userId}`, { method: 'DELETE' });
+            const result = await response.json();
+            if (result.status === 200) {
+                showNotification('User deleted successfully', 'success');
+                loadUsers();
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+        }
+    }
+
+    function editUser(userId) {
+        const user = users.find(u => u.user_id === userId);
+        if (user) {
+            editingUserId = userId;
+            document.getElementById('userModalTitle').innerText = 'Edit User';
+            document.getElementById('userFullName').value = user.full_name;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userPhone').value = user.phone || '';
+            document.getElementById('userUsername').value = user.username;
+            document.getElementById('userUsername').disabled = true;
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userPassword').placeholder = 'Leave blank to keep current';
+            document.getElementById('userRole').value = user.role;
+            document.getElementById('userStatus').value = user.status;
+            document.getElementById('userModal').classList.add('active');
+        }
+    }
+
+    function openUserModal() {
+        editingUserId = null;
+        document.getElementById('userModalTitle').innerText = 'Add New User';
+        document.getElementById('userFullName').value = '';
+        document.getElementById('userEmail').value = '';
+        document.getElementById('userPhone').value = '';
+        document.getElementById('userUsername').value = '';
+        document.getElementById('userUsername').disabled = false;
+        document.getElementById('userPassword').value = '';
+        document.getElementById('userPassword').placeholder = 'Password';
+        document.getElementById('userRole').value = 'viewer';
+        document.getElementById('userStatus').value = 'pending';
+        document.getElementById('userModal').classList.add('active');
+    }
+
+    function closeUserModal() {
+        document.getElementById('userModal').classList.remove('active');
+        editingUserId = null;
+    }
+
+    function logoutAllDevices() {
+        if (confirm('This will log you out from all devices. Continue?')) {
+            showNotification('Logged out from all devices', 'info');
+            setTimeout(() => location.reload(), 1500);
+        }
+    }
+
+    function setupTabs() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    }
+
+    // Event Listeners
+    document.getElementById('profileForm')?.addEventListener('submit', updateProfile);
+    document.getElementById('preferencesForm')?.addEventListener('submit', updatePreferences);
+    document.getElementById('passwordForm')?.addEventListener('submit', changePassword);
+    document.getElementById('modalConfirmBtn')?.addEventListener('click', saveUser);
+    document.getElementById('modalCancelBtn')?.addEventListener('click', closeUserModal);
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+        if (confirm('Sign out of FleetGuard Pro?')) {
+            showNotification('Signed out', 'info');
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        }
+    });
+    document.getElementById('userModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('userModal')) closeUserModal();
+    });
+
+    setupTabs();
+    loadProfile();
+    loadUsers();
+</script>
+</body>
+</html>

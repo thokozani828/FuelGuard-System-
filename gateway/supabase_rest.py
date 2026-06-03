@@ -1,9 +1,12 @@
-# supabase_rest.py
+# gateway/supabase_rest.py
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import logging
+import random
+import time
+from typing import List, Dict, Optional
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -80,6 +83,11 @@ def display_telemetry_record(record: dict, title: str = "📡 TELEMETRY DATA"):
     temperature = record.get('temperature_c', 'N/A')
     timestamp = record.get('timestamp', datetime.now().isoformat())
     
+    # Location info
+    location_name = record.get('location_name', 'N/A')
+    speed = record.get('speed_kmh', 'N/A')
+    odometer = record.get('odometer_km', 'N/A')
+    
     fuel_bar = create_fuel_bar(fuel_pct)
     status_emoji = get_status_emoji(fuel_pct)
     
@@ -100,6 +108,12 @@ def display_telemetry_record(record: dict, title: str = "📡 TELEMETRY DATA"):
 │  📊 Fuel Gauge     : {fuel_bar} {fuel_pct:>5.1f}%                      │
 │  🏷️  Status        : {status:<50} │
 ├─────────────────────────────────────────────────────────────────────┤
+│ 📍 LOCATION & MOVEMENT                                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  📍 Location       : {location_name:<50} │
+│  🏁 Speed          : {speed} km/h{' ' * (44 - len(str(speed))) } │
+│  📊 Odometer       : {odometer} km{' ' * (44 - len(str(odometer))) } │
+├─────────────────────────────────────────────────────────────────────┤
 │ 🌡️  ENVIRONMENT                                                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │  🌡️  Temperature    : {temperature:>6.1f}°C                                    │
@@ -113,15 +127,15 @@ def display_fleet_status(records: list):
         print("\n⚠️ No fleet data available")
         return
     
-    print("\n" + "="*100)
+    print("\n" + "="*120)
     print(" 🚛 FLEET FUEL STATUS DASHBOARD ")
-    print("="*100)
+    print("="*120)
     print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("="*100)
+    print("="*120)
     
     # Header
-    print(f"{'TRUCK':<8} {'PLATE':<12} {'DRIVER':<15} {'FUEL %':<8} {'VOLUME':<10} {'STATUS':<10} {'GAUGE'}")
-    print("-"*100)
+    print(f"{'TRUCK':<8} {'PLATE':<12} {'DRIVER':<15} {'FUEL %':<8} {'VOLUME':<10} {'STATUS':<10} {'SPEED':<8} {'LOCATION'}")
+    print("-"*120)
     
     # Display each truck
     for record in records:
@@ -131,8 +145,10 @@ def display_fleet_status(records: list):
         fuel_pct = record.get('fuel_percentage', 0)
         volume = record.get('fuel_volume_liters', 0)
         status = record.get('status', 'UNKNOWN')[:9]
+        speed = record.get('speed_kmh', 0)
+        location = record.get('location_name', 'Unknown')[:25]
         
-        fuel_bar = create_fuel_bar(fuel_pct, 15)
+        fuel_bar = create_fuel_bar(fuel_pct, 10)
         status_emoji = get_status_emoji(fuel_pct)
         
         # Color code based on fuel level
@@ -145,22 +161,26 @@ def display_fleet_status(records: list):
         else:
             color = "🔴"
         
-        print(f"{color} {truck_id:<7} {plate:<12} {driver:<15} {fuel_pct:>6.1f}%  {volume:>8.1f}L   {status_emoji} {status:<9} {fuel_bar}")
+        speed_display = f"{speed:.0f}" if speed > 0 else "Stop"
+        
+        print(f"{color} {truck_id:<7} {plate:<12} {driver:<15} {fuel_pct:>6.1f}%  {volume:>8.1f}L   {status_emoji} {status:<9} {speed_display:>6}  {location[:25]}")
     
-    print("="*100)
+    print("="*120)
     
     # Summary statistics
     total_trucks = len(records)
     avg_fuel = sum(r.get('fuel_percentage', 0) for r in records) / total_trucks if total_trucks > 0 else 0
     critical_trucks = sum(1 for r in records if r.get('fuel_percentage', 0) < 15)
     low_trucks = sum(1 for r in records if 15 <= r.get('fuel_percentage', 0) < 30)
+    moving_trucks = sum(1 for r in records if r.get('speed_kmh', 0) > 0)
     
     print(f"\n📊 SUMMARY:")
     print(f"   Total Trucks: {total_trucks}")
+    print(f"   Moving Trucks: {moving_trucks}")
     print(f"   Average Fuel: {avg_fuel:.1f}%")
     print(f"   ⚠️  Critical (<15%): {critical_trucks}")
     print(f"   ⚠️  Low (15-30%): {low_trucks}")
-    print("="*100)
+    print("="*120)
 
 def display_alerts(alerts: list):
     """Display alerts in a formatted way"""
@@ -198,8 +218,59 @@ def display_alerts(alerts: list):
 └─────────────────────────────────────────────────────────────────────┘
 """)
 
+def get_available_sensors() -> List[Dict]:
+    """Get list of available sensors/trucks from the database"""
+    if not SUPABASE_AVAILABLE:
+        print("❌ Cannot fetch sensors: Supabase not available")
+        return []
+    
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/fuel_telemetry"
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}"
+        }
+        
+        # Get distinct devices with their latest data
+        params = {
+            "select": "device_id,truck_id,license_plate,driver_name,fuel_percentage,status,location_name,speed_kmh",
+            "order": "timestamp.desc",
+            "limit": 1000
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=5)
+        
+        if response.status_code == 200:
+            # Get unique sensors
+            sensors = {}
+            for record in response.json():
+                device_id = record.get('device_id')
+                if device_id and device_id not in sensors:
+                    sensors[device_id] = {
+                        'device_id': device_id,
+                        'truck_id': record.get('truck_id', 'N/A'),
+                        'license_plate': record.get('license_plate', 'N/A'),
+                        'driver_name': record.get('driver_name', 'N/A'),
+                        'current_fuel': record.get('fuel_percentage', 100),
+                        'status': record.get('status', 'UNKNOWN'),
+                        'location': record.get('location_name', 'Unknown'),
+                        'speed': record.get('speed_kmh', 0)
+                    }
+            
+            sensors_list = list(sensors.values())
+            print(f"📡 Found {len(sensors_list)} available sensors in database")
+            return sensors_list
+        else:
+            print(f"❌ Failed to fetch sensors: {response.status_code}")
+            return []
+            
+    except Exception as e:
+        logger.error(f"Failed to get sensors: {e}")
+        print(f"❌ Error fetching sensors: {e}")
+        return []
+
 def store_telemetry(data: dict):
-    """Store telemetry data in Supabase using REST API"""
+    """Store telemetry data with location in Supabase using REST API"""
     if not SUPABASE_AVAILABLE:
         print("⏭️ Skipping Supabase storage (no credentials)")
         return False
@@ -213,7 +284,7 @@ def store_telemetry(data: dict):
             "Prefer": "return=minimal"
         }
         
-        # Prepare data for insertion
+        # Prepare data for insertion - INCLUDING ALL LOCATION FIELDS
         telemetry_record = {
             "device_id": data.get("device_id"),
             "sensor_type": data.get("sensor_type"),
@@ -227,7 +298,14 @@ def store_telemetry(data: dict):
             "driver_name": data.get("driver_name"),
             "license_plate": data.get("license_plate"),
             "tank_capacity_liters": data.get("tank_capacity_liters"),
-            "timestamp": data.get("timestamp", datetime.utcnow().isoformat())
+            "timestamp": data.get("timestamp", datetime.utcnow().isoformat()),
+            # LOCATION FIELDS
+            "latitude": data.get("latitude"),
+            "longitude": data.get("longitude"),
+            "location_name": data.get("location_name"),
+            "odometer_km": data.get("odometer_km"),
+            "speed_kmh": data.get("speed_kmh"),
+            "trip_distance_km": data.get("trip_distance_km")
         }
         
         # Remove None values
@@ -237,11 +315,18 @@ def store_telemetry(data: dict):
         fuel_pct = telemetry_record.get('fuel_percentage', 0)
         device = telemetry_record.get('device_id', 'Unknown')
         truck = telemetry_record.get('truck_id', 'Unknown')
+        location = telemetry_record.get('location_name', 'Unknown')
+        speed = telemetry_record.get('speed_kmh', 0)
+        
+        location_info = f"📍 {location}"
+        if speed > 0:
+            location_info += f" @ {speed:.0f}km/h"
         
         print(f"\n💾 Saving to Supabase:")
         print(f"   📡 Sensor: {device}")
         print(f"   🚛 Truck: {truck}")
         print(f"   ⛽ Fuel: {fuel_pct:.1f}% {create_fuel_bar(fuel_pct)}")
+        print(f"   {location_info}")
         
         response = requests.post(url, json=telemetry_record, headers=headers, timeout=5)
         
@@ -318,8 +403,9 @@ def get_history(device_id: str, limit: int = 100, display: bool = False):
                 print("="*80)
                 for i, record in enumerate(records[:10], 1):  # Show last 10
                     fuel_pct = record.get('fuel_percentage', 0)
+                    location = record.get('location_name', 'Unknown')
                     timestamp = record.get('timestamp', 'N/A')
-                    print(f"{i:2}. {format_timestamp(timestamp)[:16]} | Fuel: {fuel_pct:5.1f}% | Status: {record.get('status', 'N/A')}")
+                    print(f"{i:2}. {format_timestamp(timestamp)[:16]} | Fuel: {fuel_pct:5.1f}% | 📍 {location[:30]}")
             return records
         return []
         
@@ -416,7 +502,7 @@ def get_fleet_status(display: bool = True):
         }
         
         params = {
-            "select": "truck_id,license_plate,driver_name,fuel_percentage,fuel_volume_liters,status,timestamp,device_id,tank_capacity_liters",
+            "select": "truck_id,license_plate,driver_name,fuel_percentage,fuel_volume_liters,status,timestamp,device_id,tank_capacity_liters,location_name,speed_kmh,odometer_km",
             "order": "timestamp.desc",
             "limit": 100
         }
@@ -474,6 +560,176 @@ def get_active_alerts(display: bool = True):
         logger.error(f"Failed to get alerts: {e}")
         return []
 
+def update_sensor_fuel(device_id: str, decrease_amount: float = None):
+    """Update fuel percentage for a specific sensor"""
+    if not SUPABASE_AVAILABLE:
+        return None
+    
+    try:
+        # Get current latest reading
+        current = get_latest_reading(device_id)
+        if not current:
+            print(f"⚠️ No existing data for sensor {device_id}, creating new record")
+            return None
+        
+        # Calculate new fuel percentage
+        current_fuel = current.get('fuel_percentage', 100)
+        
+        # Random decrease if not specified (0.5% to 3% per reading)
+        if decrease_amount is None:
+            decrease_amount = random.uniform(0.5, 3.0)
+        
+        new_fuel = max(0, current_fuel - decrease_amount)
+        
+        # Create new telemetry record with location
+        new_record = {
+            "device_id": device_id,
+            "sensor_type": current.get('sensor_type', 'ultrasonic'),
+            "raw_value_cm": current.get('raw_value_cm', 0),
+            "temperature_c": current.get('temperature_c', 25.0),
+            "fuel_level_cm": current.get('fuel_level_cm', 0) * (new_fuel / current_fuel) if current_fuel > 0 else 0,
+            "fuel_percentage": new_fuel,
+            "fuel_volume_liters": current.get('tank_capacity_liters', 300) * (new_fuel / 100),
+            "status": determine_status(new_fuel),
+            "truck_id": current.get('truck_id'),
+            "driver_name": current.get('driver_name'),
+            "license_plate": current.get('license_plate'),
+            "tank_capacity_liters": current.get('tank_capacity_liters', 300),
+            "timestamp": datetime.utcnow().isoformat(),
+            # Preserve location data
+            "latitude": current.get('latitude'),
+            "longitude": current.get('longitude'),
+            "location_name": current.get('location_name'),
+            "odometer_km": current.get('odometer_km', 0) + (decrease_amount * 0.5),  # Rough estimate
+            "speed_kmh": current.get('speed_kmh', 50),
+            "trip_distance_km": current.get('trip_distance_km', 0) + decrease_amount
+        }
+        
+        # Store the new reading
+        success = store_telemetry(new_record)
+        
+        if success:
+            # Check if alert needed
+            if new_fuel < 15:
+                store_alert(
+                    device_id=device_id,
+                    alert_type="LOW" if new_fuel >= 10 else "CRITICAL",
+                    message=f"Fuel level at {new_fuel:.1f}% - {'Critical' if new_fuel < 10 else 'Low'} fuel warning",
+                    truck_id=current.get('truck_id')
+                )
+            
+            print(f"   📉 Fuel decreased by {decrease_amount:.2f}% → {new_fuel:.1f}%")
+        
+        return new_record
+        
+    except Exception as e:
+        logger.error(f"Failed to update fuel for {device_id}: {e}")
+        return None
+
+def determine_status(fuel_percentage: float) -> str:
+    """Determine status based on fuel percentage"""
+    if fuel_percentage >= 75:
+        return "NORMAL"
+    elif fuel_percentage >= 50:
+        return "NORMAL"
+    elif fuel_percentage >= 25:
+        return "WARNING"
+    elif fuel_percentage >= 10:
+        return "LOW"
+    else:
+        return "CRITICAL"
+
+def run_sensor_simulation(num_sensors: int = None, interval_seconds: int = 5, max_iterations: int = None):
+    """
+    Run simulation for specified number of sensors
+    
+    Args:
+        num_sensors: Number of sensors to simulate (if None, uses all available)
+        interval_seconds: Seconds between readings
+        max_iterations: Maximum number of iterations (None for unlimited)
+    """
+    print("="*60)
+    print("🚛 FUEL SENSOR SIMULATION")
+    print("="*60)
+    
+    # Get available sensors
+    available_sensors = get_available_sensors()
+    
+    if not available_sensors:
+        print("\n❌ No sensors found in database!")
+        print("   Please add some sensors first using initial setup.")
+        return
+    
+    # Determine number of sensors to simulate
+    if num_sensors is None or num_sensors > len(available_sensors):
+        num_sensors = len(available_sensors)
+        print(f"\n📡 Simulating ALL {num_sensors} available sensors")
+    else:
+        print(f"\n📡 Simulating {num_sensors} out of {len(available_sensors)} available sensors")
+    
+    # Select sensors to simulate
+    sensors_to_simulate = random.sample(available_sensors, num_sensors)
+    
+    print(f"\n🎯 Selected sensors:")
+    for i, sensor in enumerate(sensors_to_simulate, 1):
+        print(f"   {i}. {sensor['device_id']} - {sensor['truck_id']} ({sensor['license_plate']}) - Current fuel: {sensor['current_fuel']:.1f}% - 📍 {sensor.get('location', 'Unknown')}")
+    
+    print(f"\n⏰ Simulation settings:")
+    print(f"   Interval: {interval_seconds} seconds")
+    print(f"   Max iterations: {max_iterations if max_iterations else 'Unlimited'}")
+    print(f"   Press Ctrl+C to stop\n")
+    
+    iteration = 0
+    
+    try:
+        while True:
+            iteration += 1
+            
+            if max_iterations and iteration > max_iterations:
+                print(f"\n✅ Reached maximum iterations ({max_iterations})")
+                break
+            
+            print(f"\n{'='*60}")
+            print(f"📊 ITERATION {iteration} - {datetime.now().strftime('%H:%M:%S')}")
+            print(f"{'='*60}")
+            
+            # Update each sensor
+            for sensor in sensors_to_simulate:
+                device_id = sensor['device_id']
+                print(f"\n🔄 Updating {device_id}...")
+                
+                # Random decrease amount (0.5% to 3%)
+                decrease = random.uniform(0.5, 3.0)
+                new_record = update_sensor_fuel(device_id, decrease)
+                
+                if new_record:
+                    # Update the sensor's current fuel in our list
+                    sensor['current_fuel'] = new_record.get('fuel_percentage', 0)
+                    
+                    # Display current status
+                    fuel_pct = new_record.get('fuel_percentage', 0)
+                    status = new_record.get('status', 'UNKNOWN')
+                    status_emoji = get_status_emoji(fuel_pct)
+                    
+                    print(f"   {status_emoji} New fuel: {fuel_pct:.1f}% | Status: {status}")
+            
+            # Show fleet status after each iteration
+            print(f"\n📊 Updating fleet dashboard...")
+            get_fleet_status(display=True)
+            
+            # Show active alerts
+            get_active_alerts(display=True)
+            
+            # Wait for next iteration
+            if not (max_iterations and iteration >= max_iterations):
+                print(f"\n⏳ Waiting {interval_seconds} seconds until next reading...")
+                time.sleep(interval_seconds)
+                
+    except KeyboardInterrupt:
+        print(f"\n\n⚠️ Simulation stopped by user after {iteration} iterations")
+        print(f"📊 Final fleet status:")
+        get_fleet_status(display=True)
+
 def test_connection():
     """Test if Supabase connection works"""
     if not SUPABASE_AVAILABLE:
@@ -499,39 +755,74 @@ def test_connection():
 
 # Test connection when module runs directly
 if __name__ == "__main__":
+    import sys
+    
     print("="*50)
-    print("Supabase REST Client Test")
+    print("Supabase REST Client with Fuel Simulation")
     print("="*50)
     
     # Test connection
     test_connection()
     
     if SUPABASE_AVAILABLE:
-        print("\n📊 Fetching fleet status...")
-        get_fleet_status(display=True)
+        # Parse command line arguments
+        num_sensors = None
+        interval = 5
+        max_iter = None
         
-        print("\n⚠️ Fetching active alerts...")
-        get_active_alerts(display=True)
+        if len(sys.argv) > 1:
+            try:
+                num_sensors = int(sys.argv[1])
+                print(f"\n📡 Will simulate {num_sensors} sensor(s)")
+            except:
+                print(f"\n⚠️ Invalid sensor count, using all available")
         
-        print("\n📝 Test storing a sample record...")
-        sample_data = {
-            "device_id": "TEST_001",
-            "sensor_type": "ultrasonic",
-            "raw_value_cm": 50.5,
-            "temperature_c": 25.0,
-            "fuel_level_cm": 69.5,
-            "fuel_percentage": 57.9,
-            "fuel_volume_liters": 173.7,
-            "status": "NORMAL",
-            "truck_id": "TRK001",
-            "driver_name": "Test Driver",
-            "license_plate": "TEST-123",
-            "tank_capacity_liters": 300,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        if len(sys.argv) > 2:
+            try:
+                interval = int(sys.argv[2])
+                print(f"⏰ Interval: {interval} seconds")
+            except:
+                pass
         
-        result = store_telemetry(sample_data)
-        if result:
-            print("✅ Test record stored successfully!")
+        if len(sys.argv) > 3:
+            try:
+                max_iter = int(sys.argv[3])
+                print(f"🔄 Max iterations: {max_iter}")
+            except:
+                pass
+        
+        # Show menu
+        print("\n📋 Available options:")
+        print("   1. Show current fleet status")
+        print("   2. Show active alerts")
+        print("   3. Run sensor simulation (decreasing fuel)")
+        print("   4. Run simulation with custom parameters")
+        print("   5. Exit")
+        
+        choice = input("\n👉 Select option (1-5): ").strip()
+        
+        if choice == '1':
+            get_fleet_status(display=True)
+        elif choice == '2':
+            get_active_alerts(display=True)
+        elif choice == '3':
+            run_sensor_simulation(
+                num_sensors=num_sensors,
+                interval_seconds=interval,
+                max_iterations=max_iter
+            )
+        elif choice == '4':
+            try:
+                n = int(input("Number of sensors to simulate: ") or num_sensors or 3)
+                i = int(input("Interval in seconds: ") or interval)
+                m = input("Max iterations (Enter for unlimited): ")
+                m = int(m) if m.strip() else None
+                run_sensor_simulation(num_sensors=n, interval_seconds=i, max_iterations=m)
+            except ValueError:
+                print("❌ Invalid input, using defaults")
+                run_sensor_simulation(num_sensors=num_sensors, interval_seconds=interval, max_iterations=max_iter)
         else:
-            print("⚠️ Test record failed - check table columns")
+            print("👋 Goodbye!")
+    else:
+        print("\n❌ Cannot run simulation without Supabase connection")
+        print("   Please configure SUPABASE_URL and SUPABASE_KEY in .env file")

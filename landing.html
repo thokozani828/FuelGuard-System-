@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=yes" />
+  <title>FuelGuard · Smart Fuel Management | Driver & Admin Portals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --fuel-orange: #ff6b35;
+      --fuel-orange-dark: #e55a2b;
+      --fuel-orange-light: #ff8c5a;
+      --deep-green: #1a472a;
+      --deep-green-dark: #0d2818;
+      --cream: #fdfbf7;
+      --shadow-premium: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+      --transition-smooth: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      --footer-yellow: #f5c542;
+      --footer-blue: #1a3c5e;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--cream);
+      color: #2e2922;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ========== PREMIUM NAVIGATION ========== */
+    .navbar {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 1400px;
+      z-index: 2000;
+      background: rgba(30, 42, 42, 0.92);
+      backdrop-filter: blur(16px);
+      border-radius: 80px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 107, 53, 0.2);
+      transition: var(--transition-smooth);
+      border: 1px solid rgba(255, 185, 110, 0.3);
+    }
+
+    .navbar.scrolled {
+      background: rgba(20, 32, 28, 0.96);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+      top: 12px;
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0.65rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(145deg, var(--fuel-orange), #ff854c);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 12px rgba(255, 107, 53, 0.3);
+    }
+
+    .logo-icon i {
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #fff8e7, #ffd9b5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .logo-text span {
+      background: linear-gradient(135deg, var(--fuel-orange), #ffb347);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 800;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-link {
+      color: #e9e2d4;
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      padding: 8px 0;
+      position: relative;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-link:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2.5px;
+      background: var(--fuel-orange);
+      border-radius: 4px;
+      transition: 0.3s ease;
+    }
+
+    .nav-link:hover:after {
+      width: 100%;
+    }
+
+    .nav-link:hover {
+      color: var(--fuel-orange);
+    }
+
+    /* ========== ADMIN DROPDOWN WITH SIGN IN & SIGN UP BUTTONS (no extra page) ========== */
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-btn {
+      background: transparent;
+      border: none;
+      color: #e9e2d4;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 60px;
+      transition: var(--transition-smooth);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .dropdown-btn i:first-child {
+      font-size: 0.95rem;
+      color: var(--fuel-orange-light);
+    }
+
+    .dropdown-btn i:last-child {
+      font-size: 0.7rem;
+      transition: transform 0.25s;
+    }
+
+    .dropdown:hover .dropdown-btn {
+      background: rgba(255, 107, 53, 0.12);
+      color: #ffffff;
+    }
+
+    .dropdown:hover .dropdown-btn i:last-child {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-content {
+      position: absolute;
+      top: calc(100% + 14px);
+      left: 0;
+      min-width: 300px;
+      background: #fffbf2;
+      border-radius: 28px;
+      padding: 1.2rem;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-12px) scale(0.96);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+      box-shadow: 0 35px 55px -15px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      z-index: 200;
+    }
+
+    .dropdown:hover .dropdown-content {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Simple button group inside dropdown */
+    .admin-auth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .admin-auth-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: white;
+      border: 1.5px solid #e0d5c4;
+      border-radius: 60px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #2c241a;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    .admin-auth-btn i {
+      font-size: 1rem;
+      color: var(--fuel-orange);
+    }
+    .admin-auth-btn:hover {
+      background: var(--fuel-orange);
+      border-color: var(--fuel-orange);
+      color: white;
+      transform: translateY(-2px);
+    }
+    .admin-auth-btn:hover i {
+      color: white;
+    }
+    .dropdown-note {
+      font-size: 0.7rem;
+      text-align: center;
+      margin-top: 12px;
+      color: #8b7a64;
+      border-top: 1px solid #ede3d3;
+      padding-top: 10px;
+    }
+
+    /* Driver direct link */
+    .driver-direct-link {
+      background: transparent;
+      border: none;
+      color: #e9e2d4;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 60px;
+      transition: var(--transition-smooth);
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+    }
+
+    .driver-direct-link i {
+      font-size: 0.95rem;
+      color: var(--fuel-orange-light);
+    }
+
+    .driver-direct-link:hover {
+      background: rgba(255, 107, 53, 0.12);
+      color: #ffffff;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-left: 6px;
+    }
+
+    .btn-nav {
+      padding: 8px 22px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.25s;
+      border: none;
+    }
+
+    .btn-login {
+      background: rgba(255, 255, 245, 0.1);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--fuel-orange);
+      color: var(--fuel-orange);
+    }
+
+    .btn-login:hover {
+      background: var(--fuel-orange);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .btn-signup {
+      background: var(--fuel-orange);
+      color: white;
+    }
+
+    .btn-signup:hover {
+      background: var(--fuel-orange-dark);
+      transform: translateY(-2px);
+    }
+
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      width: 28px;
+      height: 2.5px;
+      background: #ffdec2;
+      border-radius: 4px;
+      transition: 0.25s;
+    }
+
+    /* Hero & sections */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(125deg, #fdf6ea 0%, #efe2cf 100%);
+      padding-top: 100px;
+    }
+
+    .hero-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      color: var(--deep-green);
+    }
+
+    .hero-content h1 span {
+      color: var(--fuel-orange);
+    }
+
+    .btn-primary {
+      background: var(--fuel-orange);
+      border: none;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+    .btn-primary:hover {
+      background: var(--fuel-orange-dark);
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--deep-green);
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-weight: 700;
+      color: var(--deep-green);
+      cursor: pointer;
+      transition: 0.2s;
+      margin-left: 1rem;
+    }
+    .btn-outline:hover {
+      background: var(--deep-green);
+      color: white;
+    }
+    .cta-group {
+      margin-top: 2rem;
+    }
+
+    .section {
+      padding: 5rem 0;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: 28px;
+      padding: 2rem;
+      transition: 0.2s;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    .section-title {
+      font-size: 2.2rem;
+      margin-bottom: 2rem;
+      color: var(--deep-green);
+    }
+    .footer {
+      background: linear-gradient(145deg, var(--footer-yellow), #f0b821 40%, var(--footer-blue));
+      color: white;
+      padding: 3rem 2rem 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .navbar { width: 96%; top: 16px; }
+      .nav-menu { gap: 0.8rem; }
+    }
+
+    @media (max-width: 900px) {
+      .navbar { top: 12px; border-radius: 50px; }
+      .menu-toggle { display: flex; }
+      .nav-menu {
+        position: fixed;
+        top: 80px;
+        left: -100%;
+        width: 90%;
+        height: auto;
+        max-height: 80vh;
+        background: #212e28f2;
+        backdrop-filter: blur(28px);
+        flex-direction: column;
+        padding: 2rem 1.5rem;
+        border-radius: 32px;
+        transition: left 0.3s ease;
+        gap: 1.2rem;
+        align-items: flex-start;
+        overflow-y: auto;
+        box-shadow: 0 30px 40px rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,107,53,0.3);
+      }
+      .nav-menu.active { left: 5%; width: 90%; }
+      .dropdown-content {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        display: none;
+        background: #fffaf0;
+        margin-top: 10px;
+        width: 100%;
+        box-shadow: none;
+      }
+      .dropdown.active .dropdown-content { display: block; }
+      .dropdown-btn { width: 100%; justify-content: space-between; }
+      .driver-direct-link { width: 100%; justify-content: flex-start; }
+      .hero-container { grid-template-columns: 1fr; text-align: center; }
+      .btn-outline { margin-left: 0; margin-top: 1rem; display: inline-block; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="logo" onclick="scrollToSection('home')">
+        <div class="logo-icon"><i class="fas fa-gas-pump"></i></div>
+        <div class="logo-text">Fuel<span>Guard</span></div>
+      </div>
+      <div class="menu-toggle" id="menuToggle">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="nav-menu" id="navMenu">
+        <button class="nav-link" onclick="scrollToSection('home')">Home</button>
+        <button class="nav-link" onclick="scrollToSection('features')">Features</button>
+        
+        <!-- ADMIN DROPDOWN with Sign In & Sign Up buttons (no nested page redirect, just clean UI) -->
+        <div class="dropdown admin-dropdown">
+          <button class="dropdown-btn"><i class="fas fa-user-shield"></i> Admin <i class="fas fa-chevron-down"></i></button>
+          <div class="dropdown-content">
+            <div class="admin-auth-buttons">
+              <button class="admin-auth-btn" id="adminSignInBtn"><i class="fas fa-sign-in-alt"></i> Admin Sign In</button>
+              <button class="admin-auth-btn" id="adminSignUpBtn"><i class="fas fa-user-plus"></i> Admin Sign Up</button>
+            </div>
+            <div class="dropdown-note">
+              <i class="fas fa-lock"></i> Secure access to fleet dashboard
+            </div>
+          </div>
+        </div>
+
+        <!-- DRIVER BUTTON (Redirects to drivers page/driver-register.html) -->
+        <button class="driver-direct-link" id="driverDirectBtn">
+          <i class="fas fa-truck"></i> Driver Portal
+        </button>
+        <button class="nav-link" onclick="scrollToSection('showcase')">Gallery</button>
+        <button class="nav-link" onclick="scrollToSection('testimonials')">Testimonials</button>
+        <div class="nav-buttons">
+          <button class="btn-nav btn-login" id="headerSignInBtn">Sign In</button>
+          <button class="btn-nav btn-signup" id="headerSignUpBtn">Get Started</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero" id="home">
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-badge" style="display:inline-flex; background:rgba(255,107,53,0.12); padding:0.4rem 1.2rem; border-radius:40px; margin-bottom:1rem;"><i class="fas fa-gas-pump"></i> Intelligent Fuel Ecosystem</div>
+        <h1>Master Your Fleet with <span>FuelGuard</span></h1>
+        <p>Real-time analytics, smart alerts, and cost reduction. <strong>Drivers</strong> register on dedicated page, <strong>Admin</strong> sign in/up via dropdown.</p>
+        <div class="cta-group">
+          <button class="btn-primary" onclick="scrollToSection('features')"><i class="fas fa-rocket"></i> Launch Demo</button>
+          <button class="btn-outline" onclick="scrollToSection('showcase')"><i class="fas fa-chart-simple"></i> Analytics Tour</button>
+        </div>
+      </div>
+      <div class="hero-image"><img src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?q=80&w=2070&auto=format&fit=crop" alt="Fuel analytics" style="border-radius:36px; width:100%;"></div>
+    </div>
+  </section>
+
+  <section class="section stats-section" style="background: linear-gradient(135deg,#1a472a,#0d2818); color:white;" id="stats"><div class="container"><div class="stats-grid" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:2rem;"><div class="stat-card" style="background:rgba(255,255,255,0.12); border-radius:28px; padding:1.5rem; flex:1;"><div class="stat-number" style="font-size:2rem; font-weight:800; color:var(--fuel-orange);">10,000+</div><div>Tanks Monitored</div></div><div class="stat-card" style="background:rgba(255,255,255,0.12); border-radius:28px; padding:1.5rem; flex:1;"><div class="stat-number" style="font-size:2rem; font-weight:800; color:var(--fuel-orange);">500+</div><div>Fleet Partners</div></div><div class="stat-card" style="background:rgba(255,255,255,0.12); border-radius:28px; padding:1.5rem; flex:1;"><div class="stat-number" style="font-size:2rem; font-weight:800; color:var(--fuel-orange);">98%</div><div>Satisfaction</div></div></div></div></section>
+
+  <section class="section" id="features"><div class="container"><h2 class="section-title" style="color:var(--deep-green);">Powerful Features</h2><div class="features-grid"><div class="feature-card"><i class="fas fa-chart-line" style="font-size:2rem; color:var(--fuel-orange); margin-bottom:1rem;"></i><h3>Real-time Analytics</h3><p>Consumption insights & anomaly detection.</p></div><div class="feature-card"><i class="fas fa-bell" style="font-size:2rem; color:var(--fuel-orange); margin-bottom:1rem;"></i><h3>Smart Alerts</h3><p>Leak alerts & low fuel thresholds.</p></div><div class="feature-card"><i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:var(--fuel-orange); margin-bottom:1rem;"></i><h3>Cloud Native</h3><p>Secure remote fleet oversight.</p></div></div></div></section>
+
+  <section class="section" id="showcase"><div class="container"><h2 class="section-title">Gallery</h2><div class="showcase-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.5rem;"><div class="showcase-item" style="border-radius:32px; overflow:hidden;"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop" style="width:100%; height:260px; object-fit:cover;"></div><div class="showcase-item"><img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?q=80&w=2070&auto=format&fit=crop" style="width:100%; height:260px; object-fit:cover;"></div><div class="showcase-item"><img src="https://images.unsplash.com/photo-1566576912321-d58ddd7a6072?q=80&w=2070&auto=format&fit=crop" style="width:100%; height:260px; object-fit:cover;"></div></div></div></section>
+
+  <section class="section testimonials-section" style="background: #20261c; color:white;" id="testimonials"><div class="container"><h2>Client Voices</h2><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:2rem; margin-top:2rem;"><div style="background:rgba(255,255,240,0.1); border-radius:28px; padding:1.5rem;"><i class="fas fa-quote-left"></i><p>FuelGuard reduced my fuel costs by 22% within 2 months. Driver registration separate page is perfect.</p><h4>— Laura K.</h4></div><div style="background:rgba(255,255,240,0.1); border-radius:28px; padding:1.5rem;"><i class="fas fa-quote-left"></i><p>Admin dropdown is clean and redirects properly. Very intuitive.</p><h4>— James M.</h4></div></div></div></section>
+
+  <div class="cta-section" style="background: var(--deep-green); margin: 2rem; border-radius: 40px; padding: 3rem; text-align: center; color:white;"><h2>Ready to transform fuel management?</h2><button class="btn-primary" onclick="scrollToSection('home')" style="margin-top:1rem;">Start free trial →</button></div>
+
+  <footer class="footer"><div class="footer-container" style="max-width:1280px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem;"><div><i class="fas fa-gas-pump"></i> FuelGuard © 2025</div><div><h4>Platform</h4><button id="footerDriverBtn" style="background:none; border:none; color:white; cursor:pointer; margin-top:8px; text-decoration:underline; font-weight:500;">Driver Registration →</button></div><div><h4>Legal</h4><a href="#" style="color:white;">Privacy</a></div></div><div style="text-align:center; margin-top:2rem;">Smart fuel intelligence — driver & admin zones separated.</div></footer>
+
+  <script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    });
+
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const navMenu = document.getElementById('navMenu');
+    if(menuToggle) {
+      menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+    }
+
+    // Mobile dropdown fix: toggle on click for .admin-dropdown when screen <= 900
+    const adminDropdown = document.querySelector('.admin-dropdown');
+    if (adminDropdown) {
+      const dropBtn = adminDropdown.querySelector('.dropdown-btn');
+      if (dropBtn) {
+        dropBtn.addEventListener('click', (e) => {
+          if (window.innerWidth <= 900) {
+            e.preventDefault();
+            e.stopPropagation();
+            adminDropdown.classList.toggle('active');
+          }
+        });
+      }
+    }
+
+    // Close mobile menu on link/button click
+    document.querySelectorAll('.nav-link, .driver-direct-link, .btn-nav, .admin-auth-btn').forEach(el => {
+      el.addEventListener('click', () => {
+        if (navMenu.classList.contains('active')) navMenu.classList.remove('active');
+      });
+    });
+
+    function scrollToSection(sectionId) {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      if (navMenu.classList.contains('active')) navMenu.classList.remove('active');
+    }
+    window.scrollToSection = scrollToSection;
+
+    // ========== REDIRECT LOGIC ==========
+    // 1. DRIVERS -> driver-register.html 
+    function redirectToDriverRegister() {
+      window.location.href = 'drivers page/driver-register.html';
+    }
+    const driverBtn = document.getElementById('driverDirectBtn');
+    if (driverBtn) driverBtn.addEventListener('click', (e) => { e.preventDefault(); redirectToDriverRegister(); });
+    const footerDriverBtn = document.getElementById('footerDriverBtn');
+    if (footerDriverBtn) footerDriverBtn.addEventListener('click', () => redirectToDriverRegister());
+
+    // 2. ADMIN DROPDOWN Buttons: redirect to index.html with admin parameters
+    const adminSignInBtn = document.getElementById('adminSignInBtn');
+    const adminSignUpBtn = document.getElementById('adminSignUpBtn');
+    
+    if (adminSignInBtn) {
+      adminSignInBtn.addEventListener('click', () => {
+        window.location.href = 'index.html?admin=signin&portal=true';
+      });
+    }
+    if (adminSignUpBtn) {
+      adminSignUpBtn.addEventListener('click', () => {
+        window.location.href = 'index.html?admin=signup&mode=register';
+      });
+    }
+
+    // 3. Header buttons "Sign In" and "Get Started" -> redirect to index.html with mode (general user signin/signup)
+    const headerSignIn = document.getElementById('headerSignInBtn');
+    const headerSignUp = document.getElementById('headerSignUpBtn');
+    if (headerSignIn) {
+      headerSignIn.addEventListener('click', () => {
+        window.location.href = 'index.html?mode=signin';
+      });
+    }
+    if (headerSignUp) {
+      headerSignUp.addEventListener('click', () => {
+        window.location.href = 'index.html?mode=signup';
+      });
+    }
+
+    // 4. Any extra CTA buttons
+    const extraSignIn = document.querySelectorAll('.btn-login:not(#headerSignInBtn)');
+    extraSignIn.forEach(btn => {
+      btn.addEventListener('click', () => { window.location.href = 'index.html?mode=signin'; });
+    });
+    const extraSignUp = document.querySelectorAll('.btn-signup:not(#headerSignUpBtn)');
+    extraSignUp.forEach(btn => {
+      btn.addEventListener('click', () => { window.location.href = 'index.html?mode=signup'; });
+    });
+
+    console.log('FuelGuard: Driver → drivers page/driver-register.html | Admin dropdown with Sign In / Sign Up buttons → index.html with params');
+  </script>
+</body>
+</html>
