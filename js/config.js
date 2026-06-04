@@ -15,5 +15,5 @@ window.FuelGuardConfig = {
 
     // Supabase Public Config
     SUPABASE_URL: 'https://shdaldiqnbtlgjajxroi.supabase.co',
-    SUPABASE_KEY: '' // Should be handled via environment variables in backend, but keep here if frontend needs it for direct Supabase calls
+    SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo' // Should be handled via environment variables in backend, but keep here if frontend needs it for direct Supabase calls
 };
