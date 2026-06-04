@@ -7,8 +7,8 @@ COPY *.html /usr/share/nginx/html/
 # Copy the JS folder
 COPY js/ /usr/share/nginx/html/js/
 
-# Copy the Drivers Page folder
-COPY "drivers page/" "/usr/share/nginx/html/drivers page/"
+# Copy the Drivers Page folder using JSON array syntax for paths with spaces
+COPY ["drivers page/", "/usr/share/nginx/html/drivers page/"]
 
 # Expose port 80
 EXPOSE 80
