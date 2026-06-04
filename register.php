@@ -1,4 +1,3 @@
-
 <?php
 // Bulletproof CORS
 if (isset($_SERVER['HTTP_ORIGIN'])) {
