@@ -909,13 +909,8 @@
     }
 
     // ---- ENHANCED CLIENT-SIDE VALIDATION ----
-    // Email validation: must NOT contain any numeric digits (0-9)
+    // Email validation: standard format
     function validateEmail(email) {
-      // Check for numbers in email: if any digit 0-9 exists, it's invalid
-      if (/\d/.test(email)) {
-        return false;
-      }
-      // Standard email format validation
       const re = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
       return re.test(email);
     }

@@ -1,0 +1,146 @@
+- generic [active] [ref=e1]:
+  - img "Fuel truck on highway" [ref=e3]
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e9]: 
+      - generic [ref=e10]: FuelGuard Pro
+    - generic [ref=e11]:
+      - link "Solutions" [ref=e12] [cursor=pointer]:
+        - /url: "#"
+      - button "Fleet " [ref=e14] [cursor=pointer]:
+        - text: Fleet
+        - generic [ref=e15]: 
+      - link "Pricing" [ref=e16] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=e17]:
+        - button "Log in" [ref=e18] [cursor=pointer]
+        - button "Sign up" [ref=e19] [cursor=pointer]
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e24]: 
+        - text: FUELGUARD PRO
+      - heading "Drive Smarter, Save More Fuel" [level=1] [ref=e25]:
+        - text: Drive Smarter,
+        - text: Save More Fuel
+      - paragraph [ref=e26]: Access your personalized driver dashboard, monitor fuel efficiency, report incidents, and stay connected with your fleet manager — all from one secure portal.
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: 
+          - text: Real-time fuel tracking
+        - generic [ref=e30]:
+          - generic [ref=e31]: 
+          - text: Instant alert notifications
+        - generic [ref=e32]:
+          - generic [ref=e33]: 
+          - text: Digital accident reports
+        - generic [ref=e34]:
+          - generic [ref=e35]: 
+          - text: 24/7 driver support
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e40]: 
+        - heading "Driver Access" [level=2] [ref=e41]
+        - paragraph [ref=e42]: Secure login for authorized personnel
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: 
+          - text: AUTHORIZED DRIVER PORTAL
+          - generic [ref=e46]: 
+        - generic [ref=e47]:
+          - generic [ref=e48]:
+            - generic [ref=e49]: EMAIL ADDRESS
+            - generic [ref=e50]:
+              - generic: 
+              - textbox "driver@fuelguard.com" [ref=e51]
+          - generic [ref=e52]:
+            - generic [ref=e53]: PASSWORD
+            - generic [ref=e54]:
+              - generic: 
+              - textbox "Enter your password" [ref=e55]
+              - generic [ref=e56] [cursor=pointer]: 
+          - generic [ref=e57]:
+            - generic [ref=e58] [cursor=pointer]:
+              - checkbox "Keep me signed in" [ref=e59]
+              - generic [ref=e60]: Keep me signed in
+            - link "Forgot password?" [ref=e61] [cursor=pointer]:
+              - /url: "#"
+          - button " Sign In" [ref=e62] [cursor=pointer]:
+            - generic [ref=e63]: 
+            - text: Sign In
+        - generic [ref=e64]:
+          - text: New to FuelGuard?
+          - link "Create an account" [ref=e65] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e66]:
+          - link " 24/7 Support" [ref=e67] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e68]: 
+            - text: 24/7 Support
+          - link " Safety Guide" [ref=e69] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e70]: 
+            - text: Safety Guide
+  - contentinfo [ref=e71]:
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]: 
+          - text: FuelGuard Pro
+        - paragraph [ref=e76]: Smart fuel management solutions for modern fleets. Track, optimize, and save.
+        - generic [ref=e77]:
+          - link "" [ref=e78] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e79]: 
+          - link "" [ref=e80] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e81]: 
+          - link "" [ref=e82] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e83]: 
+          - link "" [ref=e84] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e85]: 
+      - generic [ref=e86]:
+        - heading "Quick Links" [level=4] [ref=e87]
+        - list [ref=e88]:
+          - listitem [ref=e89]:
+            - link "Dashboard" [ref=e90] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e91]:
+            - link "My Trucks" [ref=e92] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e93]:
+            - link "Accident Reports" [ref=e94] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e95]:
+            - link "Support Center" [ref=e96] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e97]:
+        - heading "Resources" [level=4] [ref=e98]
+        - list [ref=e99]:
+          - listitem [ref=e100]:
+            - link "Driver Guide" [ref=e101] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e102]:
+            - link "Safety Manual" [ref=e103] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e104]:
+            - link "Fuel Efficiency Tips" [ref=e105] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e106]:
+            - link "API Status" [ref=e107] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e108]:
+        - heading "Legal" [level=4] [ref=e109]
+        - list [ref=e110]:
+          - listitem [ref=e111]:
+            - link "Privacy Policy" [ref=e112] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e113]:
+            - link "Terms of Service" [ref=e114] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e115]:
+            - link "Cookie Policy" [ref=e116] [cursor=pointer]:
+              - /url: "#"
+    - paragraph [ref=e118]: © 2025 FuelGuard Pro. All rights reserved. Secure Fleet Management Platform

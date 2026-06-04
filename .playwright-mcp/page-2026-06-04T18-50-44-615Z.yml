@@ -1,0 +1,100 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 
+        - text: FuelGuard
+      - heading "Join Our Fuel Management Platform" [level=1] [ref=e9]:
+        - text: Join Our
+        - emphasis [ref=e10]: Fuel Management
+        - text: Platform
+      - paragraph [ref=e11]: Create your account to access premium fuel monitoring, real-time tank tracking, fleet management tools, and connect directly with our fuel specialists.
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e15]: 
+          - text: Real-time tracking
+        - generic [ref=e16]:
+          - generic [ref=e18]: 
+          - text: Fleet management
+        - generic [ref=e19]:
+          - generic [ref=e21]: 
+          - text: 24/7 support
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - heading "Get Started" [level=3] [ref=e25]
+        - paragraph [ref=e26]: Free account · No credit card required
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - generic [ref=e30]: First Name
+            - generic:
+              - generic: 
+            - textbox "John" [ref=e31]
+          - generic [ref=e32]:
+            - generic [ref=e33]: Last Name
+            - generic:
+              - generic: 
+            - textbox "Dlamini" [ref=e34]
+        - generic [ref=e35]:
+          - generic [ref=e36]: Email Address
+          - generic:
+            - generic: 
+          - textbox "manager@fuelcompany.com" [ref=e37]
+        - generic [ref=e38]:
+          - generic [ref=e39]: Phone Number
+          - generic:
+            - generic: 
+          - textbox "+27 82 456 7890" [ref=e40]
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: Password
+            - generic:
+              - generic: 
+            - textbox "Min. 8 characters" [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46]: Confirm Password
+            - generic:
+              - generic: 
+            - textbox "Re-enter" [ref=e47]
+        - generic [ref=e50]: Weak
+        - generic [ref=e51]:
+          - checkbox "I agree to the Terms and Privacy Policy." [ref=e52]
+          - generic [ref=e53]:
+            - text: I agree to the
+            - link "Terms" [ref=e54] [cursor=pointer]:
+              - /url: "#"
+            - text: and
+            - link "Privacy Policy" [ref=e55] [cursor=pointer]:
+              - /url: "#"
+            - text: .
+        - button " Create My Account" [ref=e56] [cursor=pointer]:
+          - generic [ref=e57]: 
+          - text: Create My Account
+        - paragraph [ref=e58]: Already have an account? Sign in
+        - generic [ref=e59]:
+          - generic "Google" [ref=e60] [cursor=pointer]:
+            - generic [ref=e61]: 
+          - generic "Microsoft" [ref=e62] [cursor=pointer]:
+            - generic [ref=e63]: 
+          - generic "GitHub" [ref=e64] [cursor=pointer]:
+            - generic [ref=e65]: 
+  - generic [ref=e67]:
+    - generic [ref=e68]:
+      - generic [ref=e69]: 
+      - text: 10,000+ Tanks Monitored
+    - generic [ref=e70]:
+      - generic [ref=e71]: 
+      - text: 500+ Fleet Partners
+    - generic [ref=e72]:
+      - generic [ref=e73]: 
+      - text: South Africa Based
+    - generic [ref=e74]:
+      - generic [ref=e75]: 
+      - text: 5-Star Customer Reviews
+  - paragraph [ref=e77]:
+    - text: © 2025 FuelGuard · Smart Fuel Management Solutions ·
+    - link "Privacy" [ref=e78] [cursor=pointer]:
+      - /url: "#"
+    - text: ·
+    - link "Terms" [ref=e79] [cursor=pointer]:
+      - /url: "#"

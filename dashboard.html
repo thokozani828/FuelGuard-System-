@@ -467,15 +467,26 @@
 
     async function fetchData(endpoint, params = '') {
         try {
-            // Simulate API call with fallback to mock data
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const response = await fetch(endpoint + (params ? '?' + params : ''), {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const result = await response.json();
+            
+            // Return data from response (handle both array and object formats)
+            return result.data || result;
+        } catch (error) { 
+            console.error(`Error fetching from ${endpoint}:`, error);
+            // Fallback to mock data for demo purposes if API fails
             if (endpoint.includes('trucks')) return mockData.trucks;
             if (endpoint.includes('alerts')) return mockData.alerts;
             if (endpoint.includes('telemetry')) return mockData.telemetry;
             if (endpoint.includes('maintenance')) return mockData.maintenance;
             if (endpoint.includes('refueling')) return mockData.refueling;
             return [];
-        } catch (error) { console.error(error); return []; }
+        }
     }
 
     async function fetchStatistics() {

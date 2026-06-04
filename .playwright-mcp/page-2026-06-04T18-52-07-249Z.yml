@@ -1,0 +1,169 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - heading " FleetGuard Pro" [level=1] [ref=e5]:
+        - generic [ref=e6]: 
+        - text: FleetGuard Pro
+      - paragraph [ref=e7]: AI POWERED
+    - generic [ref=e8]:
+      - generic [ref=e9]: FLEET OPERATIONS
+      - link " Overview" [ref=e10] [cursor=pointer]:
+        - /url: dashboard.html
+        - generic [ref=e11]: 
+        - generic [ref=e12]: Overview
+      - link " Add Drivers" [ref=e13] [cursor=pointer]:
+        - /url: team.html
+        - generic [ref=e14]: 
+        - generic [ref=e15]: Add Drivers
+      - link " Add Truck" [ref=e16] [cursor=pointer]:
+        - /url: trucks.html
+        - generic [ref=e17]: 
+        - generic [ref=e18]: Add Truck
+      - link " Add Sensors" [ref=e19] [cursor=pointer]:
+        - /url: sensors.html
+        - generic [ref=e20]: 
+        - generic [ref=e21]: Add Sensors
+      - generic [ref=e22]: MONITORING & ALERTS
+      - link " Alerts 0" [ref=e23] [cursor=pointer]:
+        - /url: alerts.html
+        - generic [ref=e24]: 
+        - generic [ref=e25]: Alerts
+        - generic [ref=e26]: "0"
+      - link " Refueling" [ref=e27] [cursor=pointer]:
+        - /url: refueling.html
+        - generic [ref=e28]: 
+        - generic [ref=e29]: Refueling
+      - link " Telemetry" [ref=e30] [cursor=pointer]:
+        - /url: telemetry.html
+        - generic [ref=e31]: 
+        - generic [ref=e32]: Telemetry
+      - generic [ref=e33]: ADVANCED ANALYTICS
+      - link " Integrations" [ref=e34] [cursor=pointer]:
+        - /url: integrations.html
+        - generic [ref=e35]: 
+        - generic [ref=e36]: Integrations
+      - link " Maintenance" [ref=e37] [cursor=pointer]:
+        - /url: maintenance.html
+        - generic [ref=e38]: 
+        - generic [ref=e39]: Maintenance
+      - link " AI Analytics NEW" [ref=e40] [cursor=pointer]:
+        - /url: ai-analytics.html
+        - generic [ref=e41]: 
+        - generic [ref=e42]: AI Analytics
+        - generic [ref=e43]: NEW
+      - link " Settings" [ref=e44] [cursor=pointer]:
+        - /url: settings.html
+        - generic [ref=e45]: 
+        - generic [ref=e46]: Settings
+    - generic [ref=e47]:
+      - generic [ref=e48]: 
+      - text: AI Version 1.0
+    - generic [ref=e49] [cursor=pointer]:
+      - generic [ref=e50]: 
+      - generic [ref=e51]: Sign out
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - heading " Fleet Overview" [level=2] [ref=e55]:
+          - generic [ref=e56]: 
+          - text: Fleet Overview
+        - paragraph [ref=e57]: Real-time fleet intelligence · Live telemetry · Predictive analytics
+      - button " Refresh Data" [ref=e58] [cursor=pointer]:
+        - generic [ref=e59]: 
+        - text: Refresh Data
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - generic [ref=e63]: 
+        - generic [ref=e64]: "-"
+        - generic [ref=e65]: Total Trucks
+        - generic [ref=e66]:
+          - generic [ref=e67]: 
+          - text: Active Fleet
+      - generic [ref=e68]:
+        - generic [ref=e70]: 
+        - generic [ref=e71]: "-%"
+        - generic [ref=e72]: Average Fuel Level
+      - generic [ref=e73]:
+        - generic [ref=e75]: 
+        - generic [ref=e76]: "-"
+        - generic [ref=e77]: Active Alerts
+      - generic [ref=e78]:
+        - generic [ref=e80]: 
+        - generic [ref=e81]: "-"
+        - generic [ref=e82]: Pending Maintenance
+      - generic [ref=e83]:
+        - generic [ref=e85]: 
+        - generic [ref=e86]: "- L"
+        - generic [ref=e87]: Fuel Used (30 days)
+      - generic [ref=e88]:
+        - generic [ref=e90]: $
+        - generic [ref=e91]: "-"
+        - generic [ref=e92]: Fuel Cost (30 days)
+    - generic [ref=e93]:
+      - generic [ref=e95]:
+        - generic [ref=e96]: 
+        - text: Fuel Level Trends (Last 7 Days)
+      - generic [ref=e99]:
+        - generic [ref=e100]: 
+        - text: Alert Distribution
+    - generic [ref=e102]:
+      - generic [ref=e103]:
+        - heading " Low Fuel Alerts" [level=3] [ref=e104]:
+          - generic [ref=e105]: 
+          - text: Low Fuel Alerts
+        - generic [ref=e106]:
+          - generic [ref=e107]: 
+          - text: Vehicles needing attention
+      - table [ref=e109]:
+        - rowgroup [ref=e110]:
+          - row "Truck ID License Plate Driver Fuel Level Status Last Reading" [ref=e111]:
+            - columnheader "Truck ID" [ref=e112]
+            - columnheader "License Plate" [ref=e113]
+            - columnheader "Driver" [ref=e114]
+            - columnheader "Fuel Level" [ref=e115]
+            - columnheader "Status" [ref=e116]
+            - columnheader "Last Reading" [ref=e117]
+        - rowgroup [ref=e118]:
+          - row "Loading..." [ref=e119]:
+            - cell "Loading..." [ref=e120]: Loading...
+      - generic [ref=e122]:
+        - generic [ref=e123]:
+          - heading " Recent Alerts & Activity" [level=3] [ref=e124]:
+            - generic [ref=e125]: 
+            - text: Recent Alerts & Activity
+          - generic [ref=e126]: Last 7 days
+        - table [ref=e128]:
+          - rowgroup [ref=e129]:
+            - row "Date Truck Type Message Status" [ref=e130]:
+              - columnheader "Date" [ref=e131]
+              - columnheader "Truck" [ref=e132]
+              - columnheader "Type" [ref=e133]
+              - columnheader "Message" [ref=e134]
+              - columnheader "Status" [ref=e135]
+          - rowgroup [ref=e136]:
+            - row "Loading..." [ref=e137]:
+              - cell "Loading..." [ref=e138]: Loading...
+        - generic [ref=e140]:
+          - generic [ref=e141]:
+            - heading " Upcoming Maintenance" [level=3] [ref=e142]:
+              - generic [ref=e143]: 
+              - text: Upcoming Maintenance
+            - generic [ref=e144]: Next 30 days
+          - table [ref=e146]:
+            - rowgroup [ref=e147]:
+              - row "Truck ID Service Type Due Date Status Days Left" [ref=e148]:
+                - columnheader "Truck ID" [ref=e149]
+                - columnheader "Service Type" [ref=e150]
+                - columnheader "Due Date" [ref=e151]
+                - columnheader "Status" [ref=e152]
+                - columnheader "Days Left" [ref=e153]
+            - rowgroup [ref=e154]:
+              - row "Loading..." [ref=e155]:
+                - cell "Loading..." [ref=e156]: Loading...
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - generic [ref=e160]: 
+              - text: Real-time fleet analytics · Live data from IoT sensors
+            - generic [ref=e161]:
+              - generic [ref=e162]: 
+              - text: FleetGuard Pro v1.0 | 08:52:06 PM

@@ -1,0 +1,7 @@
+[    2922ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ https://fuelguard-frontend.onrender.com/:0
+[    2925ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ https://fuelguard-frontend.onrender.com/:0
+[    2925ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ https://fuelguard-frontend.onrender.com/:0
+[   19033ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://fuelguard-frontend.onrender.com/favicon.ico:0
+[   73843ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ https://fuelguard-frontend.onrender.com/:0
+[   73844ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ https://fuelguard-frontend.onrender.com/:0
+[   73845ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ https://fuelguard-frontend.onrender.com/:0
