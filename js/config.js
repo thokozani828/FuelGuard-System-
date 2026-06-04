@@ -4,14 +4,15 @@
  */
 window.FuelGuardConfig = {
     // URL of your PHP Backend (Render Docker Service)
-    API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
         ? '' // Use relative path in local dev
-        : 'https://fuelguard-backend.onrender.com', // 👈 REPLACE THIS after deploying backend
+        : 'https://fuelguard-backend.onrender.com', 
 
     // URL of your Python IoT Gateway (Render Web Service)
     GATEWAY_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:8000'
-        : 'https://fuelguard-system.onrender.com', // 👈 REPLACE THIS after deploying gateway
+        : 'https://fuelguard-system.onrender.com', 
+
 
     // Supabase Public Config
     SUPABASE_URL: 'https://shdaldiqnbtlgjajxroi.supabase.co',
