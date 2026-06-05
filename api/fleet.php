@@ -182,7 +182,8 @@ class FleetManager {
                 }
                 
                 // 2. Check if driver is already assigned to another truck (One Driver, One Truck constraint)
-                $assignmentCheck = $this->supabase->get('trucks', ['driver_name' => 'eq.' . urlencode($driverResult['data'][0]['full_name'])]);
+                // FIX: Removed urlencode here because get() uses http_build_query which already encodes values.
+                $assignmentCheck = $this->supabase->get('trucks', ['driver_name' => 'eq.' . $driverResult['data'][0]['full_name']]);
                 if ($assignmentCheck['status'] === 200 && !empty($assignmentCheck['data'])) {
                     return ['status' => 409, 'error' => 'Driver ' . $driverResult['data'][0]['full_name'] . ' is already assigned to truck ' . $assignmentCheck['data'][0]['truck_id']];
                 }
@@ -192,6 +193,9 @@ class FleetManager {
                 $driverName = $driver['full_name'];
                 $driverPhone = $driver['phone'] ?? null;
                 $driverEmail = $driver['email'] ?? null;
+                $driverId = $driver['driver_id']; // Captured for storage
+            } else {
+                $driverId = null;
             }
             
             // Check if vehicle already exists
@@ -203,6 +207,7 @@ class FleetManager {
             $vehicleData = [
                 'truck_id' => $data['truck_id'],
                 'license_plate' => strtoupper($data['license_plate']),
+                'driver_id' => $driverId, // Now storing the ID
                 'driver_name' => $driverName,
                 'driver_phone' => $driverPhone,
                 'driver_email' => $driverEmail,

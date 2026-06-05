@@ -513,7 +513,7 @@
           </div>
         </div>
 
-        <!-- DRIVER BUTTON (Redirects to drivers page/driver-register.html) -->
+        <!-- DRIVER BUTTON (Redirects to drivers/driver-register.html) -->
         <button class="driver-direct-link" id="driverDirectBtn">
           <i class="fas fa-truck"></i> Driver Portal
         </button>
@@ -601,7 +601,7 @@
     // ========== REDIRECT LOGIC ==========
     // 1. DRIVERS -> driver-register.html 
     function redirectToDriverRegister() {
-      window.location.href = 'drivers page/driver-register.html';
+      window.location.href = 'drivers/index.html';
     }
     const driverBtn = document.getElementById('driverDirectBtn');
     if (driverBtn) driverBtn.addEventListener('click', (e) => { e.preventDefault(); redirectToDriverRegister(); });
@@ -647,7 +647,7 @@
       btn.addEventListener('click', () => { window.location.href = 'index.html?mode=signup'; });
     });
 
-    console.log('FuelGuard: Driver → drivers page/driver-register.html | Admin dropdown with Sign In / Sign Up buttons → index.html with params');
+    console.log('FuelGuard: Driver → drivers/driver-register.html | Admin dropdown with Sign In / Sign Up buttons → index.html with params');
   </script>
 </body>
 </html>

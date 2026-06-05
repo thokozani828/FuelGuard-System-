@@ -664,6 +664,21 @@
 <div id="toastMsg" class="toast-message"></div>
 
 <script>
+    // Check for existing session on page load
+    (function checkExistingSession() {
+        const sessionStr = localStorage.getItem('fuelguard_session') || sessionStorage.getItem('fuelguard_session');
+        if (sessionStr) {
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session && session.expires_at && new Date(session.expires_at) > new Date()) {
+                    window.location.href = 'driver-dashboard.html';
+                }
+            } catch (e) {
+                console.error('Session check error:', e);
+            }
+        }
+    })();
+
     // DOM elements
     const emailInput = document.getElementById('emailInput');
     const passwordInput = document.getElementById('passwordInput');

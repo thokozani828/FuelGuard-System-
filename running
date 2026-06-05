@@ -1,13 +1,13 @@
 
 # Terminal 1 - Start API
-cd C:\xampp\htdocs\fuelGued
+cd .
 python -m uvicorn gateway.api:app --reload --port 8000
 
 # Terminal 2 - Start Simulator
-cd C:\xampp\htdocs\fuelGued
+cd .
 python -m simulator.sensor_simulator --interval 5
 
-cd C:\xampp\htdocs\fuelGued
+cd .
 python view_dashboard.py
 
 
@@ -18,7 +18,7 @@ python view_dashboard.py
 
 
 
-cd C:\xampp\htdocs\fuelGued
+cd .
 
 
 :: Run the system

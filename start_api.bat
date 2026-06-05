@@ -1,6 +1,6 @@
 @echo off
-cd C:\xampp\htdocs\fuelGued
+cd /d "%~dp0"
 echo Starting FuelGuard API Server...
 echo.
-uvicorn gateway.api:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn gateway.api:app --reload --host 0.0.0.0 --port 8000
 pause

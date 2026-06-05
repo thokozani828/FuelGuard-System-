@@ -922,11 +922,22 @@
     function updateDriverDropdown() {
         const select = document.getElementById('vehicleDriverSelect');
         if (select) {
-            if (availableDrivers.length === 0) {
-                select.innerHTML = '<option value="">-- No drivers found. Add drivers first --</option>';
+            // Find assigned driver names to filter out
+            const assignedDriverNames = fleetVehicles
+                .filter(v => (v.truck_id || v.id) !== editingVehicleId) // Exclude current vehicle if editing
+                .map(v => v.driver_name)
+                .filter(Boolean);
+            
+            // Filter available drivers
+            const actuallyAvailable = availableDrivers.filter(d => !assignedDriverNames.includes(d.full_name));
+
+            if (actuallyAvailable.length === 0 && availableDrivers.length > 0) {
+                select.innerHTML = '<option value="">-- All drivers already assigned --</option>';
+            } else if (availableDrivers.length === 0) {
+                select.innerHTML = '<option value="">-- No drivers found --</option>';
             } else {
                 select.innerHTML = '<option value="">-- Select a driver --</option>' + 
-                    availableDrivers.map(d => `<option value="${escapeHtml(d.driver_id)}" data-name="${escapeHtml(d.full_name)}" data-phone="${escapeHtml(d.phone || '')}" data-email="${escapeHtml(d.email || '')}">${escapeHtml(d.driver_id)} - ${escapeHtml(d.full_name)}</option>`).join('');
+                    actuallyAvailable.map(d => `<option value="${escapeHtml(d.driver_id)}" data-name="${escapeHtml(d.full_name)}" data-phone="${escapeHtml(d.phone || '')}" data-email="${escapeHtml(d.email || '')}">${escapeHtml(d.driver_id)} - ${escapeHtml(d.full_name)}</option>`).join('');
             }
         }
     }

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuelGuard Pro | Drivers</title>
+    <script>
+        // Check for existing session and redirect
+        function checkAndRedirect() {
+            const sessionStr = localStorage.getItem('fuelguard_session') || sessionStorage.getItem('fuelguard_session');
+            if (sessionStr) {
+                try {
+                    const session = JSON.parse(sessionStr);
+                    if (session && session.expires_at && new Date(session.expires_at) > new Date()) {
+                        window.location.href = 'driver-dashboard.html';
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Session check error:', e);
+                }
+            }
+            window.location.href = 'driver-login.html';
+        }
+        window.onload = checkAndRedirect;
+    </script>
+</head>
+<body style="background: #1a472a; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; color: white;">
+    <div style="text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 20px;">Loading FuelGuard Drivers...</div>
+        <div style="border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid white; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+    </div>
+    <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</body>
+</html>
