@@ -755,7 +755,7 @@
                 </div>
             </div>
             <div class="info-note">
-                <i class="fas fa-lock"></i> A secure password will be generated and sent to the driver's email. They can use it to log in immediately.
+                <i class="fas fa-link"></i> A secure invitation link will be sent to the driver's email. They will use this link to set their own password.
             </div>
         </div>
         <div class="modal-buttons">
@@ -1149,29 +1149,36 @@
             const result = await response.json();
             
             if (result.status === 200 || result.status === 201) {
-                // Send credentials email - this will generate a new password for new drivers
-                const emailResponse = await fetch(`${SEND_EMAIL_URL}?action=sendCredentials`, {
+                // Generate a secure random token for the invitation
+                const token = Array.from(crypto.getRandomValues(new Uint8Array(24)))
+                    .map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                // Construct the registration link (handling path correctly)
+                const baseUrl = window.location.origin + window.location.pathname;
+                const registerLink = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1) + 'setup-password.html' + 
+                                     `?token=${token}&id=${driverId}`;
+
+                // Create invitation and send email via drivers API
+                const inviteResponse = await fetch(`${API_URL}?action=createInvitation`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: driverData.email,
                         full_name: driverData.full_name,
-                        driver_id: driverId
+                        driver_id: driverId,
+                        token: token,
+                        register_link: registerLink
                     })
                 });
                 
-                const emailResult = await emailResponse.json();
+                const inviteResult = await inviteResponse.json();
                 
-                if (emailResult.status === 200) {
-                    if (emailResult.is_new_account) {
-                        showNotification(`Credentials sent to ${driverData.email}! Temporary Password: ${emailResult.temporary_password}`, 'success');
-                    } else {
-                        showNotification(`Credentials resent to ${driverData.email} (same password as before)`, 'success');
-                    }
+                if (inviteResult.status === 200) {
+                    showNotification(`Invitation link sent to ${driverData.email}!`, 'success');
                     closeModal();
                     loadDrivers();
                 } else {
-                    showNotification('Driver created but email failed: ' + (emailResult.error || 'Unknown error'), 'error');
+                    showNotification('Driver created but invitation failed: ' + (inviteResult.error || 'Unknown error'), 'error');
                     closeModal();
                     loadDrivers();
                 }
@@ -1194,35 +1201,59 @@
             return;
         }
         
-        const confirmResend = confirm(`Resend login credentials to ${driver.email}?`);
+        const confirmResend = confirm(`Resend ${driver.status === 'pending_invite' ? 'invitation link' : 'credentials'} to ${driver.email}?`);
         if (!confirmResend) return;
         
         try {
-            // IMPORTANT FIX: Use resetPassword action to RESEND existing password without changing it
-            const emailResponse = await fetch(`${SEND_EMAIL_URL}?action=resetPassword`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: driver.email,
-                    full_name: driver.full_name,
-                    driver_id: driver.driver_id
-                })
-            });
-            
-            const emailResult = await emailResponse.json();
-            
-            if (emailResult.status === 200) {
-                if (emailResult.same_password) {
-                    showNotification(`Credentials resent to ${driver.email} (same password as before)`, 'success');
+            if (driver.status === 'pending_invite') {
+                // Generate a new secure random token
+                const token = Array.from(crypto.getRandomValues(new Uint8Array(24)))
+                    .map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                const baseUrl = window.location.origin + window.location.pathname;
+                const registerLink = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1) + 'setup-password.html' + 
+                                     `?token=${token}&id=${driver.driver_id}`;
+
+                const inviteResponse = await fetch(`${API_URL}?action=resendInvitation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: driver.email,
+                        full_name: driver.full_name,
+                        driver_id: driver.driver_id,
+                        token: token,
+                        register_link: registerLink
+                    })
+                });
+                
+                const inviteResult = await inviteResponse.json();
+                if (inviteResult.status === 200) {
+                    showNotification(`New invitation link sent to ${driver.email}!`, 'success');
                 } else {
-                    showNotification(`New password generated and sent to ${driver.email}`, 'success');
+                    showNotification('Failed to resend invitation: ' + (inviteResult.error || 'Unknown error'), 'error');
                 }
             } else {
-                showNotification('Failed to resend credentials: ' + (emailResult.error || 'Unknown error'), 'error');
+                // For active drivers, use the resetPassword action
+                const emailResponse = await fetch(`${SEND_EMAIL_URL}?action=resetPassword`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: driver.email,
+                        full_name: driver.full_name,
+                        driver_id: driver.driver_id
+                    })
+                });
+                
+                const emailResult = await emailResponse.json();
+                if (emailResult.status === 200) {
+                    showNotification(`Password resent to ${driver.email}!`, 'success');
+                } else {
+                    showNotification('Failed to resend credentials: ' + (emailResult.error || 'Unknown error'), 'error');
+                }
             }
         } catch (error) {
-            console.error('Error resending credentials:', error);
-            showNotification('Error resending credentials: ' + error.message, 'error');
+            console.error('Error resending:', error);
+            showNotification('Error resending: ' + error.message, 'error');
         }
     };
 
@@ -1301,4 +1332,4 @@
     loadDrivers();
 </script>
 </body>
-</html>
+</html>l>

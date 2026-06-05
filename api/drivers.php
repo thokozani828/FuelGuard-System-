@@ -5,6 +5,7 @@
  */
 
 require_once dirname(__DIR__) . '/config.php';
+require_once __DIR__ . '/mail_sender.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -281,47 +282,9 @@ class DriverManager {
     }
     
     private function sendInvitationEmail($to, $full_name, $register_link) {
-        // Call the email API endpoint
-        $email_data = [
-            'email' => $to,
-            'full_name' => $full_name,
-            'register_link' => $register_link
-        ];
-        
-        // Get the correct URL (supports both localhost and domain)
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-        $host = $_SERVER['HTTP_HOST'];
-        $base_path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-        $url = $protocol . $host . $base_path . '/send_email.php?action=sendInvitation';
-        
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($email_data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-        
-        // Log for debugging
-        error_log("Email API call to: $url");
-        error_log("Email API response: HTTP $httpCode - $response");
-        
-        if ($curlError) {
-            error_log("CURL Error: $curlError");
-            return false;
-        }
-        
-        if ($httpCode === 200) {
-            $result = json_decode($response, true);
-            return isset($result['status']) && $result['status'] === 200;
-        }
-        
-        return false;
+        // Direct call to the function in mail_sender.php
+        $result = sendInvitationEmail($to, $full_name, $register_link);
+        return $result['success'];
     }
     
     public function resendInvitation($data) {
