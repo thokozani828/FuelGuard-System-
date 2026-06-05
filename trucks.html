@@ -1062,6 +1062,7 @@
             if (result.status === 200 && result.data) {
                 fleetVehicles = result.data;
                 renderFleetTable();
+                updateDriverDropdown();
                 document.getElementById('lastSync').innerText = new Date().toLocaleTimeString();
             } else throw new Error(result.error || 'Load failed');
         } catch (error) {
@@ -1101,6 +1102,7 @@
         const vehicleData = { 
             truck_id: id,
             license_plate: plate,
+            driver_id: driverId,
             driver_name: driverName,
             driver_phone: driverPhone,
             driver_email: driverEmail || null,
@@ -1143,10 +1145,13 @@
         document.getElementById('vehicleColor').value = vehicle.color || 'White';
         document.getElementById('driverEmail').value = vehicle.driver_email || '';
         
+        // Update dropdown before setting value to ensure the driver is in the list
+        updateDriverDropdown();
+        
         const driverSelect = document.getElementById('vehicleDriverSelect');
         for (let i = 0; i < driverSelect.options.length; i++) {
             const optionText = driverSelect.options[i].text;
-            if (optionText.includes(vehicle.driver_name) || (vehicle.driver_name && optionText.includes(vehicle.driver_name))) {
+            if (optionText.includes(vehicle.driver_name)) {
                 driverSelect.value = driverSelect.options[i].value;
                 break;
             }
