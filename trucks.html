@@ -710,7 +710,7 @@
 <script>
     // Use centralized configuration
     const SUPABASE_URL = window.FuelGuardConfig.SUPABASE_URL;
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo';
+    const SUPABASE_ANON_KEY = window.FuelGuardConfig.SUPABASE_KEY;
     
     const API_URL = `${window.FuelGuardConfig.API_BASE_URL}/api/fleet.php`;
     let fleetVehicles = [];

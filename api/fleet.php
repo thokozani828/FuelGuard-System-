@@ -175,10 +175,18 @@ class FleetManager {
             $driverEmail = $data['driver_email'] ?? null;
 
             if (!empty($data['driver_id'])) {
+                // 1. Verify driver exists
                 $driverResult = $this->supabase->get('drivers', ['driver_id' => 'eq.' . $data['driver_id']]);
                 if ($driverResult['status'] !== 200 || empty($driverResult['data'])) {
                     return ['status' => 400, 'error' => 'Invalid assignment: Driver ID ' . $data['driver_id'] . ' not found in database.'];
                 }
+                
+                // 2. Check if driver is already assigned to another truck (One Driver, One Truck constraint)
+                $assignmentCheck = $this->supabase->get('trucks', ['driver_name' => 'eq.' . urlencode($driverResult['data'][0]['full_name'])]);
+                if ($assignmentCheck['status'] === 200 && !empty($assignmentCheck['data'])) {
+                    return ['status' => 409, 'error' => 'Driver ' . $driverResult['data'][0]['full_name'] . ' is already assigned to truck ' . $assignmentCheck['data'][0]['truck_id']];
+                }
+
                 // Use verified driver details
                 $driver = $driverResult['data'][0];
                 $driverName = $driver['full_name'];
@@ -241,15 +249,28 @@ class FleetManager {
             
             // Business Logic: Verify Driver existence if provided
             if (!empty($data['driver_id'])) {
+                // 1. Verify driver exists
                 $driverResult = $this->supabase->get('drivers', ['driver_id' => 'eq.' . $data['driver_id']]);
                 if ($driverResult['status'] !== 200 || empty($driverResult['data'])) {
                     return ['status' => 400, 'error' => 'Invalid assignment: Driver ID ' . $data['driver_id'] . ' not found in database.'];
                 }
+
                 $driver = $driverResult['data'][0];
+
+                // 2. Check if driver is already assigned to another truck (One Driver, One Truck constraint)
+                $assignmentCheck = $this->supabase->get('trucks', ['driver_name' => 'eq.' . urlencode($driver['full_name'])]);
+                if ($assignmentCheck['status'] === 200 && !empty($assignmentCheck['data'])) {
+                    // If it's already assigned to THIS truck, that's fine. If it's a DIFFERENT truck, block it.
+                    if ($assignmentCheck['data'][0]['truck_id'] !== $vehicleId) {
+                        return ['status' => 409, 'error' => 'Driver ' . $driver['full_name'] . ' is already assigned to truck ' . $assignmentCheck['data'][0]['truck_id']];
+                    }
+                }
+
                 $updateData['driver_name'] = $driver['full_name'];
                 $updateData['driver_phone'] = $driver['phone'] ?? null;
                 $updateData['driver_email'] = $driver['email'] ?? null;
-            } else {
+            }
+ else {
                 if (isset($data['driver_name'])) {
                     $updateData['driver_name'] = $data['driver_name'];
                 }

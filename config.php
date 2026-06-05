@@ -4,6 +4,11 @@
  * Loads environment variables from .env file
  */
 
+// Disable error display in output to prevent breaking JSON responses
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
 // Load .env file
 $envPath = __DIR__ . '/.env';
 if (file_exists($envPath)) {

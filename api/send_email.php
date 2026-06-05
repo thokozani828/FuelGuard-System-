@@ -234,7 +234,13 @@ function sendDriverCredentials($to, $full_name, $driver_id, $password) {
 }
 
 // Handle the API request
-$data = json_decode(file_get_contents('php://input'), true);
+$json_input = file_get_contents('php://input');
+$data = json_decode($json_input, true);
+
+// Debug logging (check error logs on Render)
+error_log("Raw Input: " . $json_input);
+error_log("Decoded Data: " . print_r($data, true));
+
 $action = $_GET['action'] ?? '';
 
 if ($action === 'sendCredentials') {

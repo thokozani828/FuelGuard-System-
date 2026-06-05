@@ -718,7 +718,7 @@
 </div>
 
 <script>
-    const API_URL = 'api/settings.php';
+    const API_URL = `${window.FuelGuardConfig.API_BASE_URL}/api/settings.php`;
     let currentUser = null;
     let users = [];
     let editingUserId = null;

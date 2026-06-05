@@ -468,7 +468,7 @@
 
 <script>
     const SUPABASE_URL = window.FuelGuardConfig.SUPABASE_URL;
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoZGFsZGlxbmJ0bGdqYWp4cm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA0MTcsImV4cCI6MjA5NDYwNjQxN30.BDRnisUkar6CaBKc0-AI6IXw16yfgjrkqEv59PWkJIo';
+    const SUPABASE_KEY = window.FuelGuardConfig.SUPABASE_KEY;
     
     let alerts = [], refreshInterval = null;
     let currentRole = 'fleet'; // fleet-only mode, no driver role switcher
